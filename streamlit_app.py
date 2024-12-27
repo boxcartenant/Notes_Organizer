@@ -1,7 +1,8 @@
+import streamlit as st
 from google_auth_oauthlib.flow import Flow
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
-import streamlit as st
+from urllib.parse import urlencode
 
 SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
 
@@ -21,18 +22,21 @@ def create_auth_flow():
 def authenticate_user():
     """Authenticate user with Google OAuth 2.0."""
     if "credentials" not in st.session_state:
-        flow = create_auth_flow()
-        auth_url, _ = flow.authorization_url(prompt="consent")
-        st.write("Click the link below to log in:")
-        st.markdown(f"[Log in with Google]({auth_url})")
-
-        # Prompt user for the authorization code
-        code = st.text_input("Enter the authorization code:")
-        if code:
-            flow.fetch_token(code=code)
+        # Step 1: Check for the "code" parameter in the redirect URI
+        query_params = st.experimental_get_query_params()
+        if "code" in query_params:
+            # Step 2: Complete the OAuth flow using the authorization code
+            flow = create_auth_flow()
+            flow.fetch_token(code=query_params["code"][0])
             creds = flow.credentials
             st.session_state["credentials"] = creds.to_dict()
             st.success("Authentication successful!")
+        else:
+            # Step 3: Generate the authentication URL for the user to log in
+            flow = create_auth_flow()
+            auth_url, _ = flow.authorization_url(prompt="consent")
+            st.write("Click the link below to log in:")
+            st.markdown(f"[Log in with Google]({auth_url})")
     else:
         st.success("You are already logged in!")
 
