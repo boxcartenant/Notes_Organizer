@@ -4,6 +4,8 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from urllib.parse import urlencode
 
+SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
+
 def create_auth_flow():
     """Create an OAuth flow using Streamlit secrets."""
     client_config = {

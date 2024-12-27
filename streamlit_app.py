@@ -5,11 +5,6 @@ from googleapiclient.discovery import build
 from urllib.parse import urlencode
 from manage_google_files import *
 
-SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
-
-
-
-
 # Streamlit app interface
 st.title("Google Drive Viewer")
 authenticate_user()
