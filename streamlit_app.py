@@ -22,7 +22,7 @@ def create_auth_flow():
 def authenticate_user():
     """Authenticate user with Google OAuth 2.0."""
     if "credentials" not in st.session_state:
-        query_params = st.query_params()
+        query_params = st.get_query_params()
         if "code" in query_params:
             flow = create_auth_flow()
             flow.fetch_token(code=query_params["code"][0])
