@@ -58,7 +58,18 @@ def list_drive_files():
         st.error("Please authenticate first.")
         return []
 
-def download_file(file_id):
+def download_file(file_id): 
+    #maybe doesn't work
+    #intended for use with.....
+    #if "credentials" in st.session_state:
+    #   files = list_drive_files()
+    #      if files:
+    #          # Create a dropdown for file selection
+    #          file_options = {file["name"]: file["id"] for file in files}
+    #          selected_file_name = st.selectbox("Select a file to download:", list(file_options.keys()))
+    #          selected_file_id = file_options[selected_file_name]
+    #          if st.button("Download and View File"):
+    #             file_content = download_file(selected_file_id)
     """Download a file from Google Drive."""
     if "credentials" in st.session_state:
         creds = Credentials.from_authorized_user_info(st.session_state["credentials"])
