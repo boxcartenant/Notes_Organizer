@@ -56,6 +56,40 @@ def list_drive_files():
         return files
     else:
         st.error("Please authenticate first.")
+        return []
+
+def download_file(file_id):
+    """Download a file from Google Drive."""
+    if "credentials" in st.session_state:
+        creds = Credentials.from_authorized_user_info(st.session_state["credentials"])
+        service = build('drive', 'v3', credentials=creds)
+
+        # Get file metadata
+        file = service.files().get(fileId=file_id, fields="name, mimeType").execute()
+        file_name = file["name"]
+        mime_type = file["mimeType"]
+
+        # Download the file content
+        request = service.files().get_media(fileId=file_id)
+        file_stream = BytesIO()
+        downloader = MediaIoBaseDownload(file_stream, request)
+
+        done = False
+        while not done:
+            status, done = downloader.next_chunk()
+
+        file_stream.seek(0)
+        st.success(f"File '{file_name}' downloaded successfully!")
+
+        # Return file content as text or binary
+        if "text" in mime_type:
+            return file_stream.read().decode("utf-8")
+        else:
+            return file_stream.read()
+    else:
+        st.error("Please authenticate first.")
+        return None
+
 
 # Streamlit app interface
 st.title("Google Drive Viewer")
@@ -69,3 +103,23 @@ if st.button("List My Files"):
             st.write(f"{file['name']} ({file['id']})")
     else:
         st.write("No files found.")
+
+if "credentials" in st.session_state:
+    files = list_drive_files()
+
+    if files:
+        # Create a dropdown for file selection
+        file_options = {file["name"]: file["id"] for file in files}
+        selected_file_name = st.selectbox("Select a file to download:", list(file_options.keys()))
+        selected_file_id = file_options[selected_file_name]
+
+        if st.button("Download and View File"):
+            file_content = download_file(selected_file_id)
+            if file_content:
+                st.write("File Content:")
+                if isinstance(file_content, str):
+                    st.code(file_content[:500])  # Show first 500 characters for text files
+                else:
+                    st.write("Binary file content loaded successfully.")
+    else:
+        st.write("No files found in your Google Drive.")
