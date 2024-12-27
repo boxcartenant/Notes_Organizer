@@ -28,6 +28,7 @@ def authenticate_user():
             flow = create_auth_flow()
             flow.fetch_token(code=query_params["code"][0])
             creds = flow.credentials
+            # Manually extract credentials to store in session state
             st.session_state["credentials"] = {
                 "token": creds.token,
                 "refresh_token": creds.refresh_token,
