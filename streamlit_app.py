@@ -25,7 +25,7 @@ def authenticate_user():
         query_params = st.query_params
         if "code" in query_params:
             flow = create_auth_flow()
-            flow.fetch_token(code=query_params["code"][0])
+            flow.fetch_token(code=query_params["code"])
             creds = flow.credentials
             # Manually extract credentials to store in session state
             st.session_state["credentials"] = {
