@@ -22,23 +22,29 @@ def create_auth_flow():
 def authenticate_user():
     """Authenticate user with Google OAuth 2.0."""
     if "credentials" not in st.session_state:
-        # Step 1: Check for the "code" parameter in the redirect URI
         query_params = st.experimental_get_query_params()
         if "code" in query_params:
-            # Step 2: Complete the OAuth flow using the authorization code
             flow = create_auth_flow()
             flow.fetch_token(code=query_params["code"][0])
             creds = flow.credentials
-            st.session_state["credentials"] = creds.to_dict()
+            # Manually extract credentials to store in session state
+            st.session_state["credentials"] = {
+                "token": creds.token,
+                "refresh_token": creds.refresh_token,
+                "token_uri": creds.token_uri,
+                "client_id": creds.client_id,
+                "client_secret": creds.client_secret,
+                "scopes": creds.scopes,
+            }
             st.success("Authentication successful!")
         else:
-            # Step 3: Generate the authentication URL for the user to log in
             flow = create_auth_flow()
             auth_url, _ = flow.authorization_url(prompt="consent")
             st.write("Click the link below to log in:")
             st.markdown(f"[Log in with Google]({auth_url})")
     else:
         st.success("You are already logged in!")
+
 
 def list_drive_files():
     """List files in Google Drive."""
