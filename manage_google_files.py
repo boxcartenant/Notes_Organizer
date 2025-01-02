@@ -100,7 +100,7 @@ def browse_google_drive():
                     #st.query_params.clear()
                     st.rerun()
             else:
-                if st.button(f"Download File: {file['name']}", key=f"download_{file['id']}"):
+                if st.button(f"Download File: {file['name']}", key=f"download_{file['id']}", type="primary"):
                     file_content = download_file(file["id"], service)
                     if file_content:
                         st.write(f"File '{file['name']}' downloaded successfully!\n{file_content}")

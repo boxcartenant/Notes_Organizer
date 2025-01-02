@@ -22,6 +22,8 @@ if "show_right_pane" not in st.session_state:
 # Left Sidebar (Navigation)
 with st.sidebar:
     st.title("Left Pane")
+    if authenticate_user():
+        browse_google_drive()
     if st.button("Toggle Left Pane"):
         st.session_state["show_left_pane"] = not st.session_state["show_left_pane"]
 
