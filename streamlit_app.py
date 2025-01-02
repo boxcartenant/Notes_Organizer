@@ -44,6 +44,15 @@ else:
 with col2:
     st.header("Main Content")
     st.write("This is the main content area.")
+    if "messages" in st.session_state:
+        for i, message in enumerate(st.session_state["messages"]):
+            col1, col2 = st.columns([4, 1])
+            with col1:
+                st.write(f"File '{message}' downloaded successfully!")
+            with col2:
+                if st.button("Remove", key=f"remove_{i}"):
+                    st.session_state["messages"].pop(i)
+                    st.rerun()
 
 # Right Pane
 if st.session_state["show_right_pane"]:

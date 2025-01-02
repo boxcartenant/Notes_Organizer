@@ -103,7 +103,11 @@ def browse_google_drive():
                 if st.button(f"Download File: {file['name']}", key=f"download_{file['id']}", type="primary"):
                     file_content = download_file(file["id"], service)
                     if file_content:
-                        st.write(f"File '{file['name']}' downloaded successfully!\n{file_content}")
+                        #st.write(f"File '{file['name']}' downloaded successfully!\n{file_content}")
+                        if "messages" not in st.session_state:
+                            st.session_state["messages"] = []
+                        st.session_state["messages"].append(file["name"])
+                        st.rerun()
 
     else:
         st.error("Please authenticate first.")
