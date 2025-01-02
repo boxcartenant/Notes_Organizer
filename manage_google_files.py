@@ -40,7 +40,7 @@ def authenticate_user():
             }
             st.success("Authentication successful!")
             st.query_params.clear()
-            st.rerun()
+            #st.rerun()
             return True
         else:
             flow = create_auth_flow()
@@ -85,20 +85,22 @@ def browse_google_drive():
         files = list_drive_files(service, current_folder)
 
         if folder_stack:
-            if st.button("Go Up One Level"):
+            if st.button("Go Up One Level", key="go_up"):
                 folder_stack.pop()
                 st.session_state["folder_stack"] = folder_stack
-                st.query_params.clear()
+                #st.query_params.clear()
+                st.rerun()
 
         # Display files and folders
         for file in files:
             if file["mimeType"] == "application/vnd.google-apps.folder":
-                if st.button(f"Open Folder: {file['name']}"):
+                if st.button(f"Open Folder: {file['name']}", key=f"open_{file['id']}"):
                     folder_stack.append(file["id"])
                     st.session_state["folder_stack"] = folder_stack
-                    st.query_params.clear()
+                    #st.query_params.clear()
+                    st.rerun()
             else:
-                if st.button(f"Download File: {file['name']}"):
+                if st.button(f"Download File: {file['name']}", key=f"download_{file['id']}"):
                     file_content = download_file(file["id"], service)
                     if file_content:
                         st.write(f"File '{file['name']}' downloaded successfully!\n{file_content}")
