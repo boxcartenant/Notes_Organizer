@@ -31,9 +31,9 @@ col1, col2, col3 = st.columns([1, 3, 1])
 # Left Pane
 if st.session_state["show_left_pane"]:
     with col1:
-        st.header("Left Pane")
-        st.button("Nav Button 1")
-        st.button("Nav Button 2")
+        st.header("Left Pane", type="primary")
+        st.button("Nav Button 1", type="secondary")
+        st.button("Nav Button 2", type="tertiary")
 else:
     col1.empty()
 
