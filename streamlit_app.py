@@ -9,14 +9,7 @@ from manage_google_files import *
 st.title("Google Drive Viewer")
 authenticate_user()
 
-if st.button("List My Files"):
-    files = list_drive_files()
-    if files:
-        st.write("Files:")
-        for file in files:
-            st.write(f"{file['name']} ({file['id']})")
-    else:
-        st.write("No files found.")
+browse_google_drive()
 
 #if "credentials" in st.session_state:
 #    print("credentials in the sesh")

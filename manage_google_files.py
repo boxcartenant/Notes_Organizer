@@ -2,7 +2,9 @@ import streamlit as st
 from google_auth_oauthlib.flow import Flow
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
-from urllib.parse import urlencode
+#from urllib.parse import urlencode
+from io import BytesIO
+from googleapiclient.http import MediaIoBaseDownload
 
 SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
 
@@ -46,7 +48,7 @@ def authenticate_user():
         st.success("You are already logged in!")
 
 
-def list_drive_files():
+def old_list_drive_files():
     """List files in Google Drive."""
     if "credentials" in st.session_state:
         creds = Credentials.from_authorized_user_info(st.session_state["credentials"])
@@ -58,45 +60,61 @@ def list_drive_files():
         st.error("Please authenticate first.")
         return []
 
-def download_file(file_id): 
-    #maybe doesn't work
-    #intended for use with.....
-    #if "credentials" in st.session_state:
-    #   files = list_drive_files()
-    #      if files:
-    #          # Create a dropdown for file selection
-    #          file_options = {file["name"]: file["id"] for file in files}
-    #          selected_file_name = st.selectbox("Select a file to download:", list(file_options.keys()))
-    #          selected_file_id = file_options[selected_file_name]
-    #          if st.button("Download and View File"):
-    #             file_content = download_file(selected_file_id)
-    """Download a file from Google Drive."""
+def list_drive_files(service, folder_id=None):
+    """List files and folders in Google Drive."""
+    query = "'root' in parents" if not folder_id else f"'{folder_id}' in parents"
+    query += " and trashed=false"
+    results = service.files().list(q=query, fields="files(id, name, mimeType)").execute()
+    return results.get("files", [])
+
+def browse_google_drive():
+    """Implement a file browser for Google Drive."""
     if "credentials" in st.session_state:
         creds = Credentials.from_authorized_user_info(st.session_state["credentials"])
         service = build('drive', 'v3', credentials=creds)
 
-        # Get file metadata
-        file = service.files().get(fileId=file_id, fields="name, mimeType").execute()
-        file_name = file["name"]
-        mime_type = file["mimeType"]
+        folder_stack = st.session_state.get("folder_stack", [])
+        current_folder = folder_stack[-1] if folder_stack else None
 
-        # Download the file content
-        request = service.files().get_media(fileId=file_id)
-        file_stream = BytesIO()
-        downloader = MediaIoBaseDownload(file_stream, request)
+        # Get files and folders in the current folder
+        files = list_drive_files(service, current_folder)
 
-        done = False
-        while not done:
-            status, done = downloader.next_chunk()
+        if folder_stack:
+            if st.button("Go Up One Level"):
+                folder_stack.pop()
+                st.session_state["folder_stack"] = folder_stack
+                st.experimental_rerun()
 
-        file_stream.seek(0)
-        st.success(f"File '{file_name}' downloaded successfully!")
+        # Display files and folders
+        for file in files:
+            if file["mimeType"] == "application/vnd.google-apps.folder":
+                if st.button(f"Open Folder: {file['name']}"):
+                    folder_stack.append(file["id"])
+                    st.session_state["folder_stack"] = folder_stack
+                    st.experimental_rerun()
+            else:
+                if st.button(f"Download File: {file['name']}"):
+                    file_content = download_file(file["id"], service)
+                    if file_content:
+                        st.write(f"File '{file['name']}' downloaded successfully!")
 
-        # Return file content as text or binary
-        if "text" in mime_type:
-            return file_stream.read().decode("utf-8")
-        else:
-            return file_stream.read()
     else:
         st.error("Please authenticate first.")
-        return None
+
+def download_file(file_id, service):
+    """Download a file from Google Drive."""
+    # Get file metadata
+    file = service.files().get(fileId=file_id, fields="name, mimeType").execute()
+    file_name = file["name"]
+
+    # Download the file content
+    request = service.files().get_media(fileId=file_id)
+    file_stream = BytesIO()
+    downloader = MediaIoBaseDownload(file_stream, request)
+
+    done = False
+    while not done:
+        status, done = downloader.next_chunk()
+
+    file_stream.seek(0)
+    return file_stream.getvalue()
