@@ -40,7 +40,7 @@ def authenticate_user():
             }
             st.success("Authentication successful!")
             st.query_params.clear()
-            st.experimental_rerun()
+            st.rerun()
             return True
         else:
             flow = create_auth_flow()
