@@ -83,7 +83,7 @@ def browse_google_drive():
             if st.button("Go Up One Level"):
                 folder_stack.pop()
                 st.session_state["folder_stack"] = folder_stack
-                st.query_params()
+                #st.query_params
 
         # Display files and folders
         for file in files:
@@ -91,7 +91,7 @@ def browse_google_drive():
                 if st.button(f"Open Folder: {file['name']}"):
                     folder_stack.append(file["id"])
                     st.session_state["folder_stack"] = folder_stack
-                    st.query_params()
+                    #st.query_params
             else:
                 if st.button(f"Download File: {file['name']}"):
                     file_content = download_file(file["id"], service)
