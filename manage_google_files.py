@@ -96,7 +96,7 @@ def browse_google_drive():
                 if st.button(f"Download File: {file['name']}"):
                     file_content = download_file(file["id"], service)
                     if file_content:
-                        st.write(f"File '{file['name']}' downloaded successfully!")
+                        st.write(f"File '{file['name']}' downloaded successfully!\n{file_content}")
 
     else:
         st.error("Please authenticate first.")
