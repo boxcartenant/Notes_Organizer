@@ -39,6 +39,7 @@ def authenticate_user():
                 "scopes": creds.scopes,
             }
             st.success("Authentication successful!")
+            st.query_params.clear()
             return True
         else:
             flow = create_auth_flow()
