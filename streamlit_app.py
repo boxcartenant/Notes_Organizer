@@ -6,30 +6,42 @@ from urllib.parse import urlencode
 from manage_google_files import *
 
 # Streamlit app interface
-st.title("Google Drive Viewer")
+#st.title("Google Drive Viewer")
 
-if authenticate_user():
-    browse_google_drive()
+#if authenticate_user():
+#    browse_google_drive()
 
-#if "credentials" in st.session_state:
-#    print("credentials in the sesh")
-#    files = list_drive_files()
 
-#    if files:
-#        print("files in the drive")
-#        # Create a dropdown for file selection
-#        file_options = {file["name"]: file["id"] for file in files}
-#        selected_file_name = st.selectbox("Select a file to download:", list(file_options.keys()))
-#        selected_file_id = file_options[selected_file_name]
+import streamlit as st
 
-#        if st.button("Download and View File"):
-#            print("where is this button, yo?")
-#            file_content = download_file(selected_file_id)
-#            if file_content:
-#                st.write("File Content:")
-#                if isinstance(file_content, str):
-#                    st.code(file_content[:500])  # Show first 500 characters for text files
-#                else:
-#                    st.write("Binary file content loaded successfully.")
-#    else:
-#        st.write("No files found in your Google Drive.")
+# Sidebar navigation pane
+with st.sidebar:
+    st.title("Navigation Pane")
+    if st.button("Toggle Left Pane"):
+        st.session_state["show_left_pane"] = not st.session_state.get("show_left_pane", True)
+    
+    st.markdown("---")
+    st.write("This is the navigation area.")
+    # Add your navigation buttons or folder hierarchy here
+
+# Main and right panes
+col1, col2, col3 = st.columns([1, 2, 1])  # Adjust widths as needed
+
+# Left Pane
+if st.session_state.get("show_left_pane", True):
+    with col1:
+        st.header("Left Pane")
+        st.button("Action 1")
+        st.button("Action 2")
+else:
+    col1.empty()
+
+# Middle Pane
+with col2:
+    st.header("Main Content")
+    st.write("This is where file contents and primary interactions will appear.")
+
+# Right Pane
+with col3:
+    st.header("Special Controls")
+    st.write("Add specialized actions here.")
