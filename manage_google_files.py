@@ -91,7 +91,7 @@ def browse_google_drive():
                 if st.button(f"Open Folder: {file['name']}"):
                     folder_stack.append(file["id"])
                     st.session_state["folder_stack"] = folder_stack
-                    st.experimental_rerun()
+                    st.experimental_set_query_params()
             else:
                 if st.button(f"Download File: {file['name']}"):
                     file_content = download_file(file["id"], service)
