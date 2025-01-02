@@ -11,37 +11,46 @@ from manage_google_files import *
 #if authenticate_user():
 #    browse_google_drive()
 
-
 import streamlit as st
 
-# Sidebar navigation pane
-with st.sidebar:
-    st.title("Navigation Pane")
-    if st.button("Toggle Left Pane"):
-        st.session_state["show_left_pane"] = not st.session_state.get("show_left_pane", True)
-    
-    st.markdown("---")
-    st.write("This is the navigation area.")
-    # Add your navigation buttons or folder hierarchy here
+# Session state to manage visibility of panes
+if "show_left_pane" not in st.session_state:
+    st.session_state["show_left_pane"] = True
+if "show_right_pane" not in st.session_state:
+    st.session_state["show_right_pane"] = True
 
-# Main and right panes
-col1, col2, col3 = st.columns([1, 2, 1])  # Adjust widths as needed
+# Left Sidebar (Navigation)
+with st.sidebar:
+    st.title("Left Pane")
+    if st.button("Toggle Left Pane"):
+        st.session_state["show_left_pane"] = not st.session_state["show_left_pane"]
+
+# Layout with three columns
+col1, col2, col3 = st.columns([1, 3, 1])
 
 # Left Pane
-if st.session_state.get("show_left_pane", True):
+if st.session_state["show_left_pane"]:
     with col1:
         st.header("Left Pane")
-        st.button("Action 1")
-        st.button("Action 2")
+        st.button("Nav Button 1")
+        st.button("Nav Button 2")
 else:
     col1.empty()
 
-# Middle Pane
+# Main Content Pane
 with col2:
     st.header("Main Content")
-    st.write("This is where file contents and primary interactions will appear.")
+    st.write("This is the main content area.")
 
 # Right Pane
-with col3:
-    st.header("Special Controls")
-    st.write("Add specialized actions here.")
+if st.session_state["show_right_pane"]:
+    with col3:
+        st.header("Right Pane")
+        st.button("Option 1")
+        st.button("Option 2")
+else:
+    col3.empty()
+
+# Footer toggle button for right pane
+if st.button("Toggle Right Pane", key="toggle_right_pane"):
+    st.session_state["show_right_pane"] = not st.session_state["show_right_pane"]
