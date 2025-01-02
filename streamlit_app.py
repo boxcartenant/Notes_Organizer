@@ -8,10 +8,7 @@ from manage_google_files import *
 # Streamlit app interface
 st.title("Google Drive Viewer")
 
-if "credentials" not in st.session_state:
-    authenticate_user()
-
-else:
+if authenticate_user():
     browse_google_drive()
 
 #if "credentials" in st.session_state:

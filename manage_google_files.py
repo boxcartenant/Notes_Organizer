@@ -39,13 +39,16 @@ def authenticate_user():
                 "scopes": creds.scopes,
             }
             st.success("Authentication successful!")
+            return True
         else:
             flow = create_auth_flow()
             auth_url, _ = flow.authorization_url(prompt="consent")
             st.write("Click the link below to log in:")
             st.markdown(f"[Log in with Google]({auth_url})")
+            return False
     else:
         st.success("You are already logged in!")
+        return True
 
 
 def old_list_drive_files():
