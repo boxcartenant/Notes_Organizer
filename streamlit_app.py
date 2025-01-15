@@ -1,105 +1,119 @@
 import streamlit as st
-from google_auth_oauthlib.flow import Flow
-from google.oauth2.credentials import Credentials
-from googleapiclient.discovery import build
-from urllib.parse import urlencode
-from manage_google_files import *
 
-# Streamlit app interface
-#st.title("Google Drive Viewer")
+#Layout testing
 
-#if authenticate_user():
-#    browse_google_drive()
+def main():
+    # Set up session state for mode selection
+    if 'mode' not in st.session_state:
+        st.session_state.mode = 1
 
-import streamlit as st
+    # Sidebar: Mode buttons
+    with st.sidebar:
+        st.title("Modes")
+        if st.button("Mode 1: DB Organizer"):
+            st.session_state.mode = 1
+        if st.button("Mode 2"):
+            st.session_state.mode = 2
+        if st.button("Mode 3"):
+            st.session_state.mode = 3
 
-# Session state to manage visibility of panes
-if "show_left_pane" not in st.session_state:
-    st.session_state["show_left_pane"] = True
-if "show_right_pane" not in st.session_state:
-    st.session_state["show_right_pane"] = True
+        st.markdown("---")
 
-# Left Sidebar (Navigation)
-with st.sidebar:
-    st.title("Left Pane")
-    if authenticate_user():
-        browse_google_drive()
-    if st.button("Toggle Left Pane"):
-        st.session_state["show_left_pane"] = not st.session_state["show_left_pane"]
+        # Additional sidebar controls per mode
+        if st.session_state.mode == 1:
+            st.subheader("DB Organizer")
+            st.button("Load Data")
+            st.button("Commit Changes")
 
-# Layout with three columns
-col1, col2, col3 = st.columns([1, 3, 1])
+        elif st.session_state.mode == 2:
+            st.subheader("Mode 2 Controls")
+            for i in range(1, 4):
+                if st.button(f"Toggle List {i}"):
+                    st.session_state[f"list_{i}_visible"] = not st.session_state.get(f"list_{i}_visible", False)
+                if st.session_state.get(f"list_{i}_visible", False):
+                    for j in range(3):
+                        st.button(f"Sub-button {i}.{j}")
 
-# Left Pane
-if st.session_state["show_left_pane"]:
-    with col1:
-        st.header("Left Pane")
-        st.button("Nav Button 1", type="primary")
-        st.button("Nav Button 2", type="secondary")
-        st.button("Nav Button 3", type="tertiary")
-else:
-    col1.empty()
+        elif st.session_state.mode == 3:
+            st.subheader("Mode 3 Controls")
+            for i in range(5):
+                st.button(f"Mode 3 Button {i}")
 
-# Main Content Pane
-with col2:
-    st.header("Main Content")
-    st.write("This is the main content area.")
-    if "messages" in st.session_state:
-        for i, message in enumerate(st.session_state["messages"]):
-            col1, col2 = st.columns([4, 1])
-            with col1:
-                st.write(f"File '{message}' downloaded successfully!")
-            with col2:
-                if st.button("Remove", key=f"remove_{i}"):
-                    st.session_state["messages"].pop(i)
-                    st.rerun()
+    # Main body content
+    if st.session_state.mode == 1:
+        mode_1_body()
+    elif st.session_state.mode == 2:
+        mode_2_body()
+    elif st.session_state.mode == 3:
+        mode_3_body()
 
-# Right Pane
-if st.session_state["show_right_pane"]:
-    with col3:
-        st.header("Right Pane")
-        st.button("Option 1")
-        st.button("Option 2")
-else:
-    col3.empty()
+def mode_1_body():
+    st.title("DB Organizer")
 
-# Footer toggle button for right pane
-if st.button("Toggle Right Pane", key="toggle_right_pane"):
-    st.session_state["show_right_pane"] = not st.session_state["show_right_pane"]
+    if 'textblocks' not in st.session_state:
+        st.session_state.textblocks = []
 
+    for idx, text in enumerate(st.session_state.textblocks):
+        st.text_area(f"Textblock {idx + 1}", text, key=f"textblock_{idx}")
+        col1, col2, col3 = st.columns(3)
+        with col1:
+            if st.button("Move Up", key=f"move_up_{idx}") and idx > 0:
+                st.session_state.textblocks[idx - 1], st.session_state.textblocks[idx] = (
+                    st.session_state.textblocks[idx],
+                    st.session_state.textblocks[idx - 1],
+                )
+        with col2:
+            if st.button("Move Down", key=f"move_down_{idx}") and idx < len(st.session_state.textblocks) - 1:
+                st.session_state.textblocks[idx + 1], st.session_state.textblocks[idx] = (
+                    st.session_state.textblocks[idx],
+                    st.session_state.textblocks[idx + 1],
+                )
+        with col3:
+            if st.button("Delete", key=f"delete_{idx}"):
+                st.session_state.textblocks.pop(idx)
+                break
 
-#Feature Planning:
-# MAIN Mode
-# - sidebar: google drive files
-# - page title: currently selected topic
-# - Main content: alternating file content and control buttons for this topic and newly opened files
-#   = control button area: 
-#       _ +/- to rearrange page
-#       _ "send to topic" dropdown list
-#       _ button to split file contents so as to independently assign sections to topics
-#       _ "publish topic" button, to combine all the contents of the topic into one file
-# - right-pane (below main content on phone): 
-#   = tiered/ordered 'topic' list 
-#   = "no-topic" button to set the current topic to none?
-#   = "new topic" button to make a new topic? (maybe just do this at "send-to-topic")
-#   = a button to select the output file? (maybe just output to a file named for the current topic)
-# 
-# Bible DB Mode
-# - sidebar: 
-#   = book/verse tree showing only books/verses with tags/notes
-#   = dropdown list for tags
-#   = button to change the dropdown list sorting method (alphabet or grouped usage)
-# - page title: current selection or "make a selection" or "open a bible db"
-# - main content: notes and verse references for the current selection, and a "send-to-topic" button
-# - right-pane: list of topics, &c&c&c
-#
-# Functionality summary
-# - creates a working directory inside the google drive for output
-# - when a topic is created, a subfolder is made for it.
-# - in main mode, select files or blocks of text from the files, and assign them to topics.
-# - in Bible db mode, info about tags or verses can be selected and assigned to a topic. 
-#   a blurb describing the info will be autogenerated for use in main mode.
-# - when something is assigned to a topic, it is moved to the subfolder for that topic, 
-#   and named with its source data
-# - when a topic is "published", a text file is generated with all the outputs for that topic, 
-#   and some keywords to clue where images should sit &c
+    if st.button("Add Textblock"):
+        st.session_state.textblocks.append("")
+
+def mode_2_body():
+    st.title("Mode 2")
+
+    if 'selected_buttons' not in st.session_state:
+        st.session_state.selected_buttons = []
+
+    button_labels = [f"Button {i + 1}" for i in range(10)]
+    for idx, label in enumerate(button_labels):
+        button_state = st.session_state.selected_buttons
+        if st.button(label, key=f"button_{idx}"):
+            if idx in button_state:
+                st.session_state.selected_buttons = []
+            else:
+                st.session_state.selected_buttons = [idx]
+
+    st.text_area("Notes:", key="notes")
+    if st.button("Commit Notes"):
+        st.write(f"Notes committed: {st.session_state.notes}")
+
+    st.text_input("Tags:", key="tags")
+    if st.button("Commit Tags"):
+        st.write(f"Tags committed: {st.session_state.tags}")
+
+def mode_3_body():
+    st.title("Mode 3")
+
+    if 'selected_button' not in st.session_state:
+        st.session_state.selected_button = None
+
+    button_labels = [f"Button {i + 1}" for i in range(10)]
+    for idx, label in enumerate(button_labels):
+        if st.button(label, key=f"mode3_button_{idx}"):
+            st.session_state.selected_button = idx
+
+        if st.session_state.selected_button == idx:
+            st.text_area("Details:")
+            st.text_input("Tags:")
+            st.button("Commit")
+
+if __name__ == "__main__":
+    main()
