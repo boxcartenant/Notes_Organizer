@@ -58,28 +58,22 @@ def mode_1_body():
         col1, col2, col3 = st.columns(3)
         with col1:
             if st.button("Move Up", key=f"move_up_{idx}") and idx > 0:
-                #st.write(st.session_state.textblocks)
-                print(st.session_state.textblocks)
+                st.write(st.session_state.textblocks)
                 st.session_state.textblocks[idx - 1], st.session_state.textblocks[idx] = (
                     st.session_state.textblocks[idx],
                     st.session_state.textblocks[idx - 1],
                 )
-                #st.session_state.textblocks = list(st.session_state.textblocks)
+                st.session_state.textblocks = list(st.session_state.textblocks)
                 st.rerun()
-                print(st.session_state.textblocks)
-                #st.write(st.session_state.textblocks)
+                st.write(st.session_state.textblocks)
         with col2:
             if st.button("Move Down", key=f"move_down_{idx}") and idx < len(st.session_state.textblocks) - 1:
-                #st.write(st.session_state.textblocks)
-                print(st.session_state.textblocks)
                 st.session_state.textblocks[idx + 1], st.session_state.textblocks[idx] = (
                     st.session_state.textblocks[idx],
                     st.session_state.textblocks[idx + 1],
                 )
-                #st.session_state.textblocks = list(st.session_state.textblocks)
+                st.session_state.textblocks = list(st.session_state.textblocks)
                 st.rerun()
-                print(st.session_state.textblocks)
-                #st.write(st.session_state.textblocks)
         with col3:
             if st.button("Delete", key=f"delete_{idx}"):
                 st.session_state.textblocks.pop(idx)
