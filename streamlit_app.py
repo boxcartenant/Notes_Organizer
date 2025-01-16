@@ -53,33 +53,31 @@ def mode_1_body():
     if 'textblocks' not in st.session_state:
         st.session_state.textblocks = []
 
+    def update_textbox(thisbox, myidx, mytext):
+        st.session_state.textblocks[idx] = thisbox.value
+
     for idx, text in enumerate(st.session_state.textblocks):
-        st.text_area(f"Textblock {idx + 1}", text, key=f"textblock_{idx}")
+        thisbox = st.text_area(f"Textblock {idx + 1}", text, key=f"textblock_{idx}", on_change=update_textbox, args=(thisbox, idx, text))
         col1, col2, col3 = st.columns(3)
-        st.write(st.session_state.textblocks)
         with col1:
             if st.button("Move Up", key=f"move_up_{idx}") and idx > 0:
-                st.session_state.textblocks[idx - 1].value, st.session_state.textblocks[idx].value = (
-                    st.session_state.textblocks[idx].value,
-                    st.session_state.textblocks[idx - 1].value,
+                st.session_state.textblocks[idx - 1], st.session_state.textblocks[idx] = (
+                    st.session_state.textblocks[idx],
+                    st.session_state.textblocks[idx - 1],
                 )
-                st.session_state.textblocks = list(st.session_state.textblocks)
                 st.rerun()
-                
         with col2:
             if st.button("Move Down", key=f"move_down_{idx}") and idx < len(st.session_state.textblocks) - 1:
-                st.session_state.textblocks[idx + 1].value, st.session_state.textblocks[idx].value = (
-                    st.session_state.textblocks[idx].value,
-                    st.session_state.textblocks[idx + 1].value,
+                st.session_state.textblocks[idx + 1], st.session_state.textblocks[idx] = (
+                    st.session_state.textblocks[idx],
+                    st.session_state.textblocks[idx + 1],
                 )
-                st.session_state.textblocks = list(st.session_state.textblocks)
                 st.rerun()
         with col3:
             if st.button("Delete", key=f"delete_{idx}"):
                 st.session_state.textblocks.pop(idx)
                 st.rerun()
                 break
-        st.write(st.session_state.textblocks)
 
     if st.button("Add Textblock"):
         st.session_state.textblocks.append("")
