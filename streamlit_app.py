@@ -59,20 +59,18 @@ def mode_1_body():
         st.write(st.session_state.textblocks)
         with col1:
             if st.button("Move Up", key=f"move_up_{idx}") and idx > 0:
-                print(st.session_state.textblocks)
-                st.session_state.textblocks[idx - 1], st.session_state.textblocks[idx] = (
-                    st.session_state.textblocks[idx],
-                    st.session_state.textblocks[idx - 1],
+                st.session_state.textblocks[idx - 1].value, st.session_state.textblocks[idx].value = (
+                    st.session_state.textblocks[idx].value,
+                    st.session_state.textblocks[idx - 1].value,
                 )
                 st.session_state.textblocks = list(st.session_state.textblocks)
                 st.rerun()
                 
         with col2:
             if st.button("Move Down", key=f"move_down_{idx}") and idx < len(st.session_state.textblocks) - 1:
-                print(st.session_state.textblocks)
-                st.session_state.textblocks[idx + 1], st.session_state.textblocks[idx] = (
-                    st.session_state.textblocks[idx],
-                    st.session_state.textblocks[idx + 1],
+                st.session_state.textblocks[idx + 1].value, st.session_state.textblocks[idx].value = (
+                    st.session_state.textblocks[idx].value,
+                    st.session_state.textblocks[idx + 1].value,
                 )
                 st.session_state.textblocks = list(st.session_state.textblocks)
                 st.rerun()
