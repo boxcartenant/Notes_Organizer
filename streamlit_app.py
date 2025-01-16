@@ -62,19 +62,23 @@ def mode_1_body():
                     st.session_state.textblocks[idx],
                     st.session_state.textblocks[idx - 1],
                 )
+                st.rerun()
         with col2:
             if st.button("Move Down", key=f"move_down_{idx}") and idx < len(st.session_state.textblocks) - 1:
                 st.session_state.textblocks[idx + 1], st.session_state.textblocks[idx] = (
                     st.session_state.textblocks[idx],
                     st.session_state.textblocks[idx + 1],
                 )
+                st.rerun()
         with col3:
             if st.button("Delete", key=f"delete_{idx}"):
                 st.session_state.textblocks.pop(idx)
+                st.rerun()
                 break
 
     if st.button("Add Textblock"):
         st.session_state.textblocks.append("")
+        st.rerun()
 
 def mode_2_body():
     st.title("Mode 2")
