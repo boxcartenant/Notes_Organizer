@@ -53,35 +53,38 @@ def mode_1_body():
     if 'textblocks' not in st.session_state:
         st.session_state.textblocks = []
 
-    def update_textbox(thisbox, myidx, mytext):
-        st.session_state.textblocks[idx] = thisbox.value
+    for idx, _ in enumerate(st.session_state.textblocks):
+        # Display the text area and bind it to session state
+        st.session_state.textblocks[idx] = st.text_area(
+            f"Textblock {idx + 1}", 
+            value=st.session_state.textblocks[idx], 
+            key=f"textblock_{idx}"
+        )
 
-    for idx, text in enumerate(st.session_state.textblocks):
-        thisbox = st.text_area(f"Textblock {idx + 1}", text, key=f"textblock_{idx}", on_change=update_textbox, args=(thisbox, idx, text))
         col1, col2, col3 = st.columns(3)
         with col1:
-            if st.button("Move Up", key=f"move_up_{idx}") and idx > 0:
+            if st.button(f"Move Up {idx}", key=f"move_up_{idx}") and idx > 0:
                 st.session_state.textblocks[idx - 1], st.session_state.textblocks[idx] = (
                     st.session_state.textblocks[idx],
                     st.session_state.textblocks[idx - 1],
                 )
                 st.rerun()
         with col2:
-            if st.button("Move Down", key=f"move_down_{idx}") and idx < len(st.session_state.textblocks) - 1:
+            if st.button(f"Move Down {idx}", key=f"move_down_{idx}") and idx < len(st.session_state.textblocks) - 1:
                 st.session_state.textblocks[idx + 1], st.session_state.textblocks[idx] = (
                     st.session_state.textblocks[idx],
                     st.session_state.textblocks[idx + 1],
                 )
                 st.rerun()
         with col3:
-            if st.button("Delete", key=f"delete_{idx}"):
+            if st.button(f"Delete {idx}", key=f"delete_{idx}"):
                 st.session_state.textblocks.pop(idx)
                 st.rerun()
-                break
 
     if st.button("Add Textblock"):
         st.session_state.textblocks.append("")
         st.rerun()
+
 
 def mode_2_body():
     st.title("Mode 2")
