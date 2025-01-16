@@ -56,18 +56,20 @@ def mode_1_body():
     for idx, text in enumerate(st.session_state.textblocks):
         st.text_area(f"Textblock {idx + 1}", text, key=f"textblock_{idx}")
         col1, col2, col3 = st.columns(3)
+        st.write(st.session_state.textblocks)
         with col1:
             if st.button("Move Up", key=f"move_up_{idx}") and idx > 0:
-                st.write(st.session_state.textblocks)
+                print(st.session_state.textblocks)
                 st.session_state.textblocks[idx - 1], st.session_state.textblocks[idx] = (
                     st.session_state.textblocks[idx],
                     st.session_state.textblocks[idx - 1],
                 )
                 st.session_state.textblocks = list(st.session_state.textblocks)
                 st.rerun()
-                st.write(st.session_state.textblocks)
+                
         with col2:
             if st.button("Move Down", key=f"move_down_{idx}") and idx < len(st.session_state.textblocks) - 1:
+                print(st.session_state.textblocks)
                 st.session_state.textblocks[idx + 1], st.session_state.textblocks[idx] = (
                     st.session_state.textblocks[idx],
                     st.session_state.textblocks[idx + 1],
@@ -79,6 +81,7 @@ def mode_1_body():
                 st.session_state.textblocks.pop(idx)
                 st.rerun()
                 break
+        st.write(st.session_state.textblocks)
 
     if st.button("Add Textblock"):
         st.session_state.textblocks.append("")
