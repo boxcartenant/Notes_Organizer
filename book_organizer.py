@@ -1,10 +1,18 @@
 import streamlit as st
 import manage_google_files
 
+# === Book Organizer ===
+# These functions are for grabbing and rearranging text in my many notes,
+#  and for saving their new arrangement in some kind of book file that I 
+#  haven't structured yet.
+# 
+# So far, you can add, delete, and rearrange text blocks.
+
 def sidebar():
-    st.subheader("DB Organizer")
-    st.button("Load Data")
-    st.button("Commit Changes")
+    with st.sidebar:
+        st.subheader("DB Organizer")
+        st.button("Load Data")
+        st.button("Commit Changes")
 
 def body():
     st.title("DB Organizer")

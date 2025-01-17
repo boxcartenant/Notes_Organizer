@@ -2,9 +2,10 @@ import streamlit as st
 import manage_google_files
 
 def sidebar():
-    st.subheader("Mode 3 Controls")
-    for i in range(5):
-        st.button(f"Mode 3 Button {i}")
+    with st.sidebar:
+        st.subheader("Mode 3 Controls")
+        for i in range(5):
+            st.button(f"Mode 3 Button {i}")
 
 def body():
     st.title("Mode 3")
