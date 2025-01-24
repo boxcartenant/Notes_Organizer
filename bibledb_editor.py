@@ -17,6 +17,7 @@ def sidebar():
                 st.write(checkthefile)
                 if checkthefile and checkthefile.endswith(".json"):
                     st.session_state["bible json"] = checkthefile
+                    st.rerun()
                 elif checkthefile:
                     st.session_state["gdrive_files"].pop(checkthefile)
                     st.write("bad filetype")
@@ -29,6 +30,7 @@ def sidebar():
                 st.write(checkthefile)
                 if checkthefile and checkthefile.endswith(".bdb"):
                     st.session_state["bible bdb"] = checkthefile
+                    st.rerun()
                 elif checkthefile:
                     st.session_state["gdrive_files"].pop(checkthefile)
                     st.write("bad filetype")
@@ -45,7 +47,7 @@ def sidebar():
                     if st.session_state.get(f"list_{i}_visible", False):
                         for j in range(3):
                             st.button(f"Sub-button {i}.{j}")
-            st.write(st.session_state["bible json"], st.session_state["bible bdb"])
+
 
 def body():
     st.title("Mode 3")
