@@ -45,6 +45,9 @@ def sidebar():
                     return
                 st.markdown("---")
 
+                #to do:
+                # - figure out how to use the contents of the files I just loaded
+
                 for i in range(1, 4):
                     if st.button(f"Toggle List {i}"):
                         st.session_state[f"list_{i}_visible"] = not st.session_state.get(f"list_{i}_visible", False)
