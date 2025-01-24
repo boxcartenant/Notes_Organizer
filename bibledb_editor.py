@@ -20,7 +20,7 @@ def sidebar():
                     st.session_state["gdrive_files"].pop(checkthefile)
                     st.write("bad filetype")
                 else:
-                    st.write("failed to get that file")
+                    st.write("Waiting on selection of a bible.json")
 
             elif "bdb file" not in st.session_state:
                 st.write("Select a bible db.")
@@ -31,7 +31,7 @@ def sidebar():
                     st.session_state["gdrive_files"].pop(checkthefile)
                     st.write("bad filetype")
                 else:
-                    st.write("failed to get that file")
+                    st.write("Waiting on selection of a database.bdb")
             else:
                 st.write("json and bdb loaded!", st.session_state["bible json"], st.session_state["bible bdb"])
 
