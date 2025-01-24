@@ -45,6 +45,7 @@ def sidebar():
                     if st.session_state.get(f"list_{i}_visible", False):
                         for j in range(3):
                             st.button(f"Sub-button {i}.{j}")
+            st.write(st.session_state["bible json"], st.session_state["bible bdb"])
 
 def body():
     st.title("Mode 3")
