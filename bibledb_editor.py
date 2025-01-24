@@ -14,7 +14,7 @@ def sidebar():
             if "bible json" not in st.session_state:
                 st.write("Select a bible.")
                 checkthefile = browse_google_drive()
-                if checkthefile.endswith(".json"):
+                if checkthefile and checkthefile.endswith(".json"):
                     st.session_state["bible json"] = checkthefile
                 elif checkthefile:
                     st.session_state["gdrive_files"].pop(checkthefile)
@@ -25,7 +25,7 @@ def sidebar():
             elif "bdb file" not in st.session_state:
                 st.write("Select a bible db.")
                 checkthefile = browse_google_drive()
-                if checkthefile.endswith(".bdb"):
+                if checkthefile and checkthefile.endswith(".bdb"):
                     st.session_state["bible bdb"] = checkthefile
                 elif checkthefile:
                     st.session_state["gdrive_files"].pop(checkthefile)
@@ -33,16 +33,16 @@ def sidebar():
                 else:
                     st.write("failed to get that file")
             else:
-                st.write("json and bdb loaded!")
+                st.write("json and bdb loaded!", st.session_state["bible json"], st.session_state["bible bdb"])
 
-            st.markdown("---")
+                st.markdown("---")
 
-            for i in range(1, 4):
-                if st.button(f"Toggle List {i}"):
-                    st.session_state[f"list_{i}_visible"] = not st.session_state.get(f"list_{i}_visible", False)
-                if st.session_state.get(f"list_{i}_visible", False):
-                    for j in range(3):
-                        st.button(f"Sub-button {i}.{j}")
+                for i in range(1, 4):
+                    if st.button(f"Toggle List {i}"):
+                        st.session_state[f"list_{i}_visible"] = not st.session_state.get(f"list_{i}_visible", False)
+                    if st.session_state.get(f"list_{i}_visible", False):
+                        for j in range(3):
+                            st.button(f"Sub-button {i}.{j}")
 
 def body():
     st.title("Mode 3")
