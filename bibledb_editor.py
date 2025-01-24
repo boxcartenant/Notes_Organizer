@@ -24,7 +24,7 @@ def sidebar():
                 else:
                     st.write("Waiting on selection of a bible.json")
 
-            elif "bdb file" not in st.session_state:
+            elif "bible bdb" not in st.session_state:
                 st.write("Select a bible db.")
                 checkthefile = browse_google_drive()
                 st.write(checkthefile)
