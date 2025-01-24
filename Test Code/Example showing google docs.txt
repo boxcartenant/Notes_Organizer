@@ -38,17 +38,21 @@ else:
     col1.empty()
 
 # Main Content Pane
+
+##### This is the function we're going to copy from for the program.
+##### If it's working right, it should show the contents of the root folder in gdrive, and allow browsing download
+##### All the folder management is implemented in manage_google_files. Maybe edit that?
 with col2:
     st.header("Main Content")
     st.write("This is the main content area.")
-    if "messages" in st.session_state:
-        for i, message in enumerate(st.session_state["messages"]):
+    if "gdrive_files" in st.session_state:
+        for file_name, file_contents in st.session_state["gdrive_files"].items():
             col1, col2 = st.columns([4, 1])
             with col1:
-                st.write(f"File '{message}' downloaded successfully!")
+                st.write(f"File '{file_name}' downloaded successfully!")
             with col2:
-                if st.button("Remove", key=f"remove_{i}"):
-                    st.session_state["messages"].pop(i)
+                if st.button("Remove", key=f"remove_{file_name}"):
+                    st.session_state["gdrive_files"].pop(file_name) #if we want to ignore key errors here, we can add a second parameter: pop(file_name, None)
                     st.rerun()
 
 # Right Pane

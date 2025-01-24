@@ -104,9 +104,9 @@ def browse_google_drive():
                     file_content = download_file(file["id"], service)
                     if file_content:
                         #st.write(f"File '{file['name']}' downloaded successfully!\n{file_content}")
-                        if "messages" not in st.session_state:
-                            st.session_state["messages"] = []
-                        st.session_state["messages"].append(file["name"])
+                        if "gdrive_files" not in st.session_state:
+                            st.session_state["gdrive_files"] = {}
+                        st.session_state["gdrive_files"][file["name"]] = file_content
                         st.rerun()
 
     else:
