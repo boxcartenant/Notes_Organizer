@@ -106,8 +106,10 @@ def browse_google_drive():
                         if "gdrive_files" not in st.session_state:
                             st.session_state["gdrive_files"] = {}
                         st.session_state["gdrive_files"][file["name"]] = file_content
-                        st.rerun()
+                        print("A file was selected!")
                         return file["name"]
+                        #st.rerun()
+                        
 
     else:
         st.error("Please authenticate first.")
