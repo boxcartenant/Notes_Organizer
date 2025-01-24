@@ -49,7 +49,6 @@ def authenticate_user():
             st.markdown(f"[Log in with Google]({auth_url})")
             return False
     else:
-        st.success("You are already logged in!")
         return True
 
 
@@ -108,6 +107,7 @@ def browse_google_drive():
                             st.session_state["gdrive_files"] = {}
                         st.session_state["gdrive_files"][file["name"]] = file_content
                         st.rerun()
+                        return file["name"]
 
     else:
         st.error("Please authenticate first.")

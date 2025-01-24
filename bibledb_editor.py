@@ -1,5 +1,6 @@
 import streamlit as st
-import manage_google_files
+from manage_google_files import *
+import bibledb_lib
 
 # === Bible DB Editor === 
 # This function will mimic the behavior of the desktop app I made before.
@@ -8,13 +9,40 @@ import manage_google_files
 
 def sidebar():
     with st.sidebar:
-        st.subheader("Mode 3 Controls")
-        for i in range(1, 4):
-            if st.button(f"Toggle List {i}"):
-                st.session_state[f"list_{i}_visible"] = not st.session_state.get(f"list_{i}_visible", False)
-            if st.session_state.get(f"list_{i}_visible", False):
-                for j in range(3):
-                    st.button(f"Sub-button {i}.{j}")
+        st.subheader("DB Editor Controls")
+        if authenticate_user():
+            if "bible json" not in st.session_state:
+                st.write("Select a bible.")
+                checkthefile = browse_google_drive()
+                if checkthefile.endswith(".json"):
+                    st.session_state["bible json"] = checkthefile
+                elif checkthefile:
+                    st.session_state["gdrive_files"].pop(checkthefile)
+                    st.write("bad filetype")
+                else:
+                    st.write("failed to get that file")
+
+            elif "bdb file" not in st.session_state:
+                st.write("Select a bible db.")
+                checkthefile = browse_google_drive()
+                if checkthefile.endswith(".bdb"):
+                    st.session_state["bible bdb"] = checkthefile
+                elif checkthefile:
+                    st.session_state["gdrive_files"].pop(checkthefile)
+                    st.write("bad filetype")
+                else:
+                    st.write("failed to get that file")
+            else:
+                st.write("json and bdb loaded!")
+
+            st.markdown("---")
+
+            for i in range(1, 4):
+                if st.button(f"Toggle List {i}"):
+                    st.session_state[f"list_{i}_visible"] = not st.session_state.get(f"list_{i}_visible", False)
+                if st.session_state.get(f"list_{i}_visible", False):
+                    for j in range(3):
+                        st.button(f"Sub-button {i}.{j}")
 
 def body():
     st.title("Mode 3")
