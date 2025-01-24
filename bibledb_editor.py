@@ -14,7 +14,7 @@ def sidebar():
             if "bible json" not in st.session_state:
                 st.write("Select a bible.")
                 checkthefile = browse_google_drive()
-                print(checkthefile)
+                st.write("checkthefile")
                 if checkthefile and checkthefile.endswith(".json"):
                     st.session_state["bible json"] = checkthefile
                 elif checkthefile:
@@ -26,6 +26,7 @@ def sidebar():
             elif "bdb file" not in st.session_state:
                 st.write("Select a bible db.")
                 checkthefile = browse_google_drive()
+                st.write("checkthefile")
                 if checkthefile and checkthefile.endswith(".bdb"):
                     st.session_state["bible bdb"] = checkthefile
                 elif checkthefile:
