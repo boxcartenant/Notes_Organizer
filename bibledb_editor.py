@@ -38,7 +38,11 @@ def sidebar():
                     st.write("Waiting on selection of a database.bdb")
             else:
                 st.write("json and bdb loaded!", st.session_state["bible json"], st.session_state["bible bdb"])
-
+                if st.button("load something else", key="different_json_bdb"):
+                    del st.session_state["bible bdb"]
+                    st.session_state["bible json"]
+                    st.rerun()
+                    return
                 st.markdown("---")
 
                 for i in range(1, 4):
