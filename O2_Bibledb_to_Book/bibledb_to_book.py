@@ -1,5 +1,5 @@
 import streamlit as st
-import manage_google_files
+import Google_Drive_Management.manage_google_files as manage_google_files
 
 # === Bible DB to Book ===
 # This function will be for taking notes out of the Bible DB and adding them to the book.

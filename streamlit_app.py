@@ -1,12 +1,12 @@
 import streamlit as st
-import book_organizer
-import bibledb_to_book
-import bibledb_editor
+from O1_Book_Organizer import book_organizer
+import O2_Bibledb_to_Book.bibledb_to_book as bibledb_to_book
+import O3_Bibledb_Editor.bibledb_editor as bibledb_editor
 from google_auth_oauthlib.flow import Flow
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from urllib.parse import urlencode
-from manage_google_files import *
+from Google_Drive_Management.manage_google_files import *
 
 #Layout testing
 

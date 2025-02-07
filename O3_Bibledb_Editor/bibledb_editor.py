@@ -1,5 +1,5 @@
 import streamlit as st
-from manage_google_files import *
+from Google_Drive_Management.manage_google_files import *
 import bibledb_lib
 
 # === Bible DB Editor === 

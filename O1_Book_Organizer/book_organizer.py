@@ -1,5 +1,6 @@
 import streamlit as st
-import manage_google_files
+import Google_Drive_Management.manage_google_files as manage_google_files
+from Google_Drive_Management import save_load_projects
 
 # === Book Organizer ===
 # These functions are for grabbing and rearranging text in my many notes,
@@ -10,9 +11,23 @@ import manage_google_files
 
 def sidebar():
     with st.sidebar:
-        st.subheader("DB Organizer")
-        st.button("Load Data")
-        st.button("Commit Changes")
+        save_load_projects.list_projects()
+        
+        if "current_project" in st.session_state:
+            st.write(f"**Current Project:** `{st.session_state['current_project']}`")
+        
+        if st.button("💾 Save"):
+            if "current_project" in st.session_state:
+                save_load_projects.save_project(st.session_state["current_project"])
+            else:
+                st.warning("No project loaded. Use 'Save As' to create a new one.")
+
+        if st.button("💾 Save As"):
+            new_project_name = st.text_input("Enter new project name:")
+            if new_project_name:
+                st.session_state["current_project"] = new_project_name
+                save_load_projects.save_project(new_project_name)
+
 
 def body():
     st.title("DB Organizer")
