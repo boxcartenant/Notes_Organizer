@@ -43,6 +43,10 @@ def main():
             case 3: #bibledb_editor
                 bibledb_editor.sidebar()
                 bibledb_editor.body()
+    else:
+        st.write("This app parses txt files and bdb files made using my Parsing program.")
+        st.write("It creates a project folder in which to organize notes.")
+        st.write("Log into google drive using the link on the sidebar (left) to begin.")
             
 if __name__ == "__main__":
     main()
