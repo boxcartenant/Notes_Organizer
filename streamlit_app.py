@@ -1,9 +1,9 @@
 import streamlit as st
-from . import book_organizer
 from google_auth_oauthlib.flow import Flow
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
 from urllib.parse import urlencode
+import book_organizer
 from Google_Drive_Management.manage_google_files import *
 
 
