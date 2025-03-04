@@ -1,0 +1,79 @@
+def old_list_drive_files():
+    """List files in Google Drive."""
+    if "credentials" in st.session_state:
+        creds = Credentials.from_authorized_user_info(st.session_state["credentials"])
+        service = build('drive', 'v3', credentials=creds)
+        results = service.files().list(pageSize=10, fields="files(id, name)").execute()
+        files = results.get("files", [])
+        return files
+    else:
+        st.error("Please authenticate first.")
+        return []
+
+def list_drive_files(service, folder_id=None):
+    """List files and folders in Google Drive."""
+    query = "'root' in parents" if not folder_id else f"'{folder_id}' in parents"
+    query += " and trashed=false"
+    results = service.files().list(q=query, fields="files(id, name, mimeType)").execute()
+    return results.get("files", [])
+
+def browse_google_drive():
+    """Implement a file browser for Google Drive."""
+    if "credentials" in st.session_state:
+        creds = Credentials.from_authorized_user_info(st.session_state["credentials"])
+        service = build('drive', 'v3', credentials=creds)
+
+        folder_stack = st.session_state.get("folder_stack", [])
+        current_folder = folder_stack[-1] if folder_stack else None
+
+        # Get files and folders in the current folder
+        files = list_drive_files(service, current_folder)
+
+        if folder_stack:
+            if st.button("Go Up One Level", key="go_up"):
+                folder_stack.pop()
+                st.session_state["folder_stack"] = folder_stack
+                #st.query_params.clear()
+                st.rerun()
+
+        # Display files and folders
+        for file in files:
+            if file["mimeType"] == "application/vnd.google-apps.folder":
+                if st.button(f"Open Folder: {file['name']}", key=f"open_{file['id']}"):
+                    folder_stack.append(file["id"])
+                    st.session_state["folder_stack"] = folder_stack
+                    #st.query_params.clear()
+                    st.rerun()
+            else:
+                if st.button(f"Download File: {file['name']}", key=f"download_{file['id']}", type="primary"):
+                    file_content = download_file(file["id"], service)
+                    if file_content:
+                        #st.write(f"File '{file['name']}' downloaded successfully!\n{file_content}")
+                        if "gdrive_files" not in st.session_state:
+                            st.session_state["gdrive_files"] = {}
+                        st.session_state["gdrive_files"][file["name"]] = file_content
+                        print("A file was selected!")
+                        return file["name"]
+                        #st.rerun()
+                        
+
+    else:
+        st.error("Please authenticate first.")
+
+def download_file(file_id, service):
+    """Download a file from Google Drive."""
+    # Get file metadata
+    file = service.files().get(fileId=file_id, fields="name, mimeType").execute()
+    file_name = file["name"]
+
+    # Download the file content
+    request = service.files().get_media(fileId=file_id)
+    file_stream = BytesIO()
+    downloader = MediaIoBaseDownload(file_stream, request)
+
+    done = False
+    while not done:
+        status, done = downloader.next_chunk()
+
+    file_stream.seek(0)
+    return file_stream.getvalue()

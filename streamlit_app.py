@@ -1,7 +1,5 @@
 import streamlit as st
-from O1_Book_Organizer import book_organizer
-import O2_Bibledb_to_Book.bibledb_to_book as bibledb_to_book
-import O3_Bibledb_Editor.bibledb_editor as bibledb_editor
+from . import book_organizer
 from google_auth_oauthlib.flow import Flow
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import build
@@ -19,14 +17,6 @@ def main():
 
     # Sidebar: Mode buttons
     with st.sidebar:
-        st.title("Navigation")
-        if st.button("Book Organizer"):
-            st.session_state.mode = 1
-        if st.button("DB to Book"):
-            st.session_state.mode = 2
-        if st.button("DB Editor"):
-            st.session_state.mode = 3
-        st.markdown("---")
         logged_in = authenticate_user()
 
 
@@ -37,14 +27,9 @@ def main():
             case 1: #book Organizer
                 book_organizer.sidebar()
                 book_organizer.body()
-            case 2: #bibledb to book
-                bibledb_to_book.sidebar()
-                bibledb_to_book.body()
-            case 3: #bibledb_editor
-                bibledb_editor.sidebar()
-                bibledb_editor.body()
+
     else:
-        st.write("This app parses txt files and bdb files made using my Parsing program.")
+        st.write("This app fetches text files from google drive, and lets you organize their contents.")
         st.write("It creates a project folder in which to organize notes.")
         st.write("Log into google drive using the link on the sidebar (left) to begin.")
             

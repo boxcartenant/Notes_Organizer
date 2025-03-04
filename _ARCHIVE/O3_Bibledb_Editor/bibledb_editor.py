@@ -1,6 +1,6 @@
 import streamlit as st
 from Google_Drive_Management.manage_google_files import *
-import bibledb_lib
+import _ARCHIVE.bibledb_lib as bibledb_lib
 
 # === Bible DB Editor === 
 # This function will mimic the behavior of the desktop app I made before.
