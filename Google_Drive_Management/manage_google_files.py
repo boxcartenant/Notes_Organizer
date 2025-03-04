@@ -7,7 +7,7 @@ from io import BytesIO
 from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
 import json
 
-SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
+SCOPES = ['https://www.googleapis.com/auth/drive']
 
 def create_auth_flow():
     """Create an OAuth flow using Streamlit secrets."""
@@ -63,7 +63,7 @@ def list_drive_files(service, folder_id=None):
     return results.get("files", [])
 
 def download_file(file_id, service):
-    """Download a file from Google Drive as bytes."""
+    """Download a file from Google Drive as string."""
     request = service.files().get_media(fileId=file_id)
     file_stream = BytesIO()
     downloader = MediaIoBaseDownload(file_stream, request)
@@ -71,7 +71,7 @@ def download_file(file_id, service):
     while not done:
         status, done = downloader.next_chunk()
     file_stream.seek(0)
-    return file_stream.getvalue().decode("utf-8")  # Decode bytes to string
+    return file_stream.getvalue().decode("utf-8")
 
 def upload_file(service, file_content, file_name, folder_id=None):
     """Upload a file to Google Drive."""
@@ -81,24 +81,27 @@ def upload_file(service, file_content, file_name, folder_id=None):
     return file.get("id")
 
 def browse_google_drive(service):
-    """Google Drive browser with cleaner UX."""
-    # Initialize session state for navigation and project
+    """Google Drive browser with chapter management."""
+    # Initialize session state
     if "folder_stack" not in st.session_state:
         st.session_state.folder_stack = []
     if "project" not in st.session_state:
-        st.session_state.project = {"folder_id": None, "manifest": {"blocks": []}}
+        st.session_state.project = {
+            "folder_id": None,
+            "manifest": {"chapters": {"Chapter 1": []}},  # Default chapter
+            "current_chapter": "Chapter 1"
+        }
 
     current_folder = st.session_state.folder_stack[-1] if st.session_state.folder_stack else None
     files = list_drive_files(service, current_folder)
 
-    # Navigation
     with st.sidebar:
+        # Navigation
         st.write("### Google Drive Browser")
         if st.session_state.folder_stack and st.button("⬆ Go Up", key="go_up"):
             st.session_state.folder_stack.pop()
             st.rerun()
 
-        # Folder/file selection with expander for better mobile UX
         with st.expander("Folders and Files", expanded=True):
             for file in files:
                 if file["mimeType"] == "application/vnd.google-apps.folder":
@@ -108,16 +111,15 @@ def browse_google_drive(service):
                 else:
                     if st.button(f"📄 {file['name']}", key=f"file_{file['id']}"):
                         content = download_file(file["id"], service)
-                        # Instead of storing full content in session_state, add to project
-                        block_id = f"block_{len(st.session_state.project['manifest']['blocks'])}"
+                        block_id = f"block_{len(st.session_state.project['manifest']['chapters'][st.session_state.project['current_chapter']])}"
                         block_file_name = f"{block_id}.txt"
                         upload_file(service, content, block_file_name, st.session_state.project["folder_id"])
-                        st.session_state.project["manifest"]["blocks"].append({
+                        st.session_state.project["manifest"]["chapters"][st.session_state.project["current_chapter"]].append({
                             "id": block_id,
                             "file_path": block_file_name,
-                            "order": len(st.session_state.project["manifest"]["blocks"])
+                            "order": len(st.session_state.project["manifest"]["chapters"][st.session_state.project["current_chapter"]])
                         })
-                        st.success(f"Added {file['name']} as block {block_id}")
+                        st.success(f"Added {file['name']} to {st.session_state.project['current_chapter']}")
                         st.rerun()
 
         # Project management
@@ -125,13 +127,15 @@ def browse_google_drive(service):
         project_folder = st.text_input("Project Folder ID", value=st.session_state.project["folder_id"] or "")
         if st.button("Set Project Folder"):
             st.session_state.project["folder_id"] = project_folder
-            # Check if manifest exists, otherwise create it
             manifest_file = next((f for f in list_drive_files(service, project_folder) if f["name"] == "manifest.json"), None)
             if not manifest_file:
-                upload_file(service, json.dumps({"blocks": []}), "manifest.json", project_folder)
+                upload_file(service, json.dumps({"chapters": {"Chapter 1": []}}), "manifest.json", project_folder)
             else:
                 manifest_content = download_file(manifest_file["id"], service)
                 st.session_state.project["manifest"] = json.loads(manifest_content)
+                if "chapters" not in st.session_state.project["manifest"]:
+                    st.session_state.project["manifest"]["chapters"] = {"Chapter 1": []}
+                st.session_state.project["current_chapter"] = list(st.session_state.project["manifest"]["chapters"].keys())[0]
             st.rerun()
 
         if st.button("Save Project"):
@@ -142,3 +146,13 @@ def browse_google_drive(service):
             else:
                 upload_file(service, manifest_content, "manifest.json", st.session_state.project["folder_id"])
             st.success("Project saved!")
+
+        # Chapter management
+        st.write("### Chapters")
+        with st.expander("Manage Chapters", expanded=True):
+            chapters = list(st.session_state.project["manifest"]["chapters"].keys())
+            st.session_state.project["current_chapter"] = st.selectbox("Current Chapter", chapters, index=chapters.index(st.session_state.project["current_chapter"]))
+            new_chapter = st.text_input("New Chapter Name")
+            if st.button("Add Chapter") and new_chapter and new_chapter not in chapters:
+                st.session_state.project["manifest"]["chapters"][new_chapter] = []
+                st.rerun()

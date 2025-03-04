@@ -9,25 +9,28 @@ from Google_Drive_Management.manage_google_files import *
 #Layout testing
 
 def main():
-    # Set up session state for mode selection
-    if 'mode' not in st.session_state:
-        st.session_state.mode = 1
+    if "credentials" in st.session_state:
+        creds = Credentials.from_authorized_user_info(st.session_state["credentials"])
+        service = build('drive', 'v3', credentials=creds)
+        browse_google_drive(service)
+        
+    else:
+        st.error("Please authenticate first.")
 
+
+def main():
     logged_in = False
 
     # Sidebar: Mode buttons
     with st.sidebar:
         logged_in = authenticate_user()
 
-
-
     #Everything else
     if logged_in:
-        match st.session_state.mode:
-            case 1: #book Organizer
-                book_organizer.sidebar()
-                book_organizer.body()
-
+            creds = Credentials.from_authorized_user_info(st.session_state["credentials"])
+            service = build('drive', 'v3', credentials=creds)
+            browse_google_drive(service)
+            book_organizer.body(service)
     else:
         st.write("This app fetches text files from google drive, and lets you organize their contents.")
         st.write("It creates a project folder in which to organize notes.")
