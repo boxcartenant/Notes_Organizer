@@ -7,6 +7,11 @@ from io import BytesIO
 from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
 import json
 
+
+# This .py file has functions for getting lists of stuff from google drive.
+# unfortunately, it isn't a one-stop-shop for all my google-drive editing functions at the moment.
+# later on, I'm going to move it all in here. For now, it authenticates, and it lists and browses files.
+
 SCOPES = ['https://www.googleapis.com/auth/drive']
 
 def create_auth_flow():
