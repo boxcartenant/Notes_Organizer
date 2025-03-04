@@ -6,17 +6,6 @@ from googleapiclient.discovery import build
 from urllib.parse import urlencode
 from Google_Drive_Management.manage_google_files import *
 
-#Layout testing
-
-def main():
-    if "credentials" in st.session_state:
-        creds = Credentials.from_authorized_user_info(st.session_state["credentials"])
-        service = build('drive', 'v3', credentials=creds)
-        browse_google_drive(service)
-        
-    else:
-        st.error("Please authenticate first.")
-
 
 def main():
     logged_in = False
