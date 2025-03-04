@@ -8,6 +8,8 @@ import json
 
 SCOPES = ['https://www.googleapis.com/auth/drive']  # Updated scope for read/write access
 
+#OK ZAC -- troubleshoot this by comparing with the revision you mostly wrote, a few rev's back.
+
 def list_drive_files(service, folder_id=None):
     """List files and folders in Google Drive."""
     query = "'root' in parents" if not folder_id else f"'{folder_id}' in parents"
