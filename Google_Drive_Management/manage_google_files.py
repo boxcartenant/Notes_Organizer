@@ -63,7 +63,7 @@ def browse_google_drive(service):
             st.session_state.folder_stack.pop()
             st.rerun()
 
-        project_folder_name = "Not set" if not st.session_state.project["folder_id"] else next((f["name"] for f in files if f["id"] == st.session_state.project["folder_id"]), "Unknown")
+        project_folder_name = "Not set" if not st.session_state.project["folder_id"] else st.session_state.project["name"]
         st.write(f"**Current Project Folder**: {project_folder_name}")
 
         with st.expander("Create New Folder", expanded=False):
@@ -84,6 +84,7 @@ def browse_google_drive(service):
                     with col2:
                         if st.button("Set", key=f"set_{file['id']}"):
                             st.session_state.project["folder_id"] = file["id"]
+                            st.session_state.project["folder_name"] = file["name"]
                             manifest_file = next((f for f in list_drive_files(service, file["id"]) if f["name"] == "manifest.json"), None)
                             if not manifest_file:
                                 upload_file(service, json.dumps({"chapters": {"Chapter 1": []}}), "manifest.json", file["id"])
@@ -125,7 +126,10 @@ def browse_google_drive(service):
             st.write("### Chapters")
             with st.expander("Manage Chapters", expanded=True):
                 chapters = list(st.session_state.project["manifest"]["chapters"].keys())
-                st.session_state.project["current_chapter"] = st.selectbox("Current Chapter", chapters, index=chapters.index(st.session_state.project["current_chapter"]))
+                new_target_chapter = st.selectbox("Current Chapter", chapters, index=chapters.index(st.session_state.project["current_chapter"]))
+                if new_target_chapter and new_target_chapter != st.session_state.project["current_chapter"]:
+                    st.session_state.project["current_chapter"] = new_target_chapter
+                    st.rerun()
                 new_chapter = st.text_input("New Chapter Name")
                 if st.button("Add Chapter") and new_chapter and new_chapter not in chapters:
                     st.session_state.project["manifest"]["chapters"][new_chapter] = []
