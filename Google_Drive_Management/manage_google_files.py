@@ -6,9 +6,7 @@ from io import BytesIO
 from googleapiclient.http import MediaIoBaseDownload, MediaFileUpload
 import json
 
-SCOPES = ['https://www.googleapis.com/auth/drive']  # Updated scope for read/write access
-
-#OK ZAC -- troubleshoot this by comparing with the revision you mostly wrote, a few rev's back.
+SCOPES = ['https://www.googleapis.com/auth/drive']
 
 def list_drive_files(service, folder_id=None):
     """List files and folders in Google Drive."""
@@ -31,7 +29,7 @@ def download_file(file_id, service):
 def upload_file(service, file_content, file_name, folder_id=None):
     """Upload a file to Google Drive."""
     file_metadata = {"name": file_name, "parents": [folder_id] if folder_id else []}
-    media = MediaFileUpload(BytesIO(file_content.encode("utf-8")), mimetype="text/plain")
+    media = MediaIoBaseUpload(BytesIO(file_content.encode("utf-8")), mimetype="text/plain")  # Changed to MediaIoBaseUpload
     file = service.files().create(body=file_metadata, media_body=media, fields="id").execute()
     return file.get("id")
 
@@ -47,7 +45,6 @@ def create_folder(service, folder_name, parent_id=None):
 
 def browse_google_drive(service):
     """Google Drive browser with folder selection and creation."""
-    # Initialize session state
     if "folder_stack" not in st.session_state:
         st.session_state.folder_stack = []
     if "project" not in st.session_state:
@@ -61,17 +58,14 @@ def browse_google_drive(service):
     files = list_drive_files(service, current_folder)
 
     with st.sidebar:
-        # Navigation
         st.write("### Google Drive Browser")
         if st.session_state.folder_stack and st.button("⬆ Go Up", key="go_up"):
             st.session_state.folder_stack.pop()
             st.rerun()
 
-        # Project status
         project_folder_name = "Not set" if not st.session_state.project["folder_id"] else next((f["name"] for f in files if f["id"] == st.session_state.project["folder_id"]), "Unknown")
         st.write(f"**Current Project Folder**: {project_folder_name}")
 
-        # Folder creation
         with st.expander("Create New Folder", expanded=False):
             new_folder_name = st.text_input("Folder Name", key="new_folder_name")
             if st.button("Create", key="create_folder") and new_folder_name:
@@ -79,7 +73,6 @@ def browse_google_drive(service):
                 st.success(f"Created folder: {new_folder_name}")
                 st.rerun()
 
-        # Folder/file selection
         with st.expander("Folders and Files", expanded=True):
             for file in files:
                 if file["mimeType"] == "application/vnd.google-apps.folder":
@@ -119,17 +112,15 @@ def browse_google_drive(service):
                             st.success(f"Added {file['name']} to {st.session_state.project['current_chapter']}")
                             st.rerun()
 
-        # Save project
         if st.session_state.project["folder_id"] and st.button("Save Project"):
             manifest_content = json.dumps(st.session_state.project["manifest"])
             manifest_file = next((f for f in list_drive_files(service, st.session_state.project["folder_id"]) if f["name"] == "manifest.json"), None)
             if manifest_file:
-                service.files().update(fileId=manifest_file["id"], media_body=MediaFileUpload(BytesIO(manifest_content.encode("utf-8")), mimetype="application/json")).execute()
+                service.files().update(fileId=manifest_file["id"], media_body=MediaIoBaseUpload(BytesIO(manifest_content.encode("utf-8")), mimetype="application/json")).execute()
             else:
                 upload_file(service, manifest_content, "manifest.json", st.session_state.project["folder_id"])
             st.success("Project saved!")
 
-        # Chapter management
         if st.session_state.project["folder_id"]:
             st.write("### Chapters")
             with st.expander("Manage Chapters", expanded=True):
