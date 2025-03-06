@@ -63,7 +63,7 @@ def browse_google_drive(service):
             st.session_state.folder_stack.pop()
             st.rerun()
 
-        project_folder_name = "Not set" if not st.session_state.project["folder_id"] else st.session_state.project["name"]
+        project_folder_name = "Not set" if not st.session_state.project["folder_id"] else st.session_state.project["folder_name"]
         st.write(f"**Current Project Folder**: {project_folder_name}")
 
         with st.expander("Create New Folder", expanded=False):
