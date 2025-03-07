@@ -8,6 +8,15 @@ import json
 
 SCOPES = ['https://www.googleapis.com/auth/drive']
 
+def save_project_manifest(service):
+    manifest_content = json.dumps(st.session_state.project["manifest"])
+    manifest_file = next((f for f in list_drive_files(service, st.session_state.project["folder_id"]) if f["name"] == "manifest.json"), None)
+    if manifest_file:
+        service.files().update(fileId=manifest_file["id"], media_body=MediaIoBaseUpload(BytesIO(manifest_content.encode("utf-8")), mimetype="application/json")).execute()
+    else:
+        upload_file(service, manifest_content, "manifest.json", st.session_state.project["folder_id"])
+    st.success("Project saved!")
+
 def list_drive_files(service, folder_id=None):
     """List files and folders in Google Drive."""
     query = "'root' in parents" if not folder_id else f"'{folder_id}' in parents"
@@ -81,21 +90,21 @@ def browse_google_drive(service):
                         if st.button(f"📁 {file['name']}", key=f"folder_{file['id']}"):
                             st.session_state.folder_stack.append(file["id"])
                             st.rerun()
-                    with col2:
-                        if st.button("Set", key=f"set_{file['id']}"):
-                            st.session_state.project["folder_id"] = file["id"]
-                            st.session_state.project["folder_name"] = file["name"]
-                            manifest_file = next((f for f in list_drive_files(service, file["id"]) if f["name"] == "manifest.json"), None)
-                            if not manifest_file:
-                                upload_file(service, json.dumps({"chapters": {"Chapter 1": []}}), "manifest.json", file["id"])
-                            else:
-                                manifest_content = download_file(manifest_file["id"], service)
-                                st.session_state.project["manifest"] = json.loads(manifest_content)
-                                if "chapters" not in st.session_state.project["manifest"]:
-                                    st.session_state.project["manifest"]["chapters"] = {"Chapter 1": []}
-                                st.session_state.project["current_chapter"] = list(st.session_state.project["manifest"]["chapters"].keys())[0]
-                            st.success(f"Project folder set to: {file['name']}")
-                            st.rerun()
+                    if not st.session_state.project["folder_id"]: #you can only set the project once, because i don't want to have to clear my session state.
+                        with col2:
+                            if st.button("Set", key=f"set_{file['id']}"):
+                                st.session_state.project["folder_id"] = file["id"]
+                                st.session_state.project["folder_name"] = file["name"]
+                                manifest_file = next((f for f in list_drive_files(service, file["id"]) if f["name"] == "manifest.json"), None)
+                                if not manifest_file:
+                                    upload_file(service, json.dumps({"chapters": {"Chapter 1": []}}), "manifest.json", file["id"])
+                                else:
+                                    manifest_content = download_file(manifest_file["id"], service)
+                                    st.session_state.project["manifest"] = json.loads(manifest_content)
+                                    if "chapters" not in st.session_state.project["manifest"]:
+                                        st.session_state.project["manifest"]["chapters"] = {"Chapter 1": []}
+                                    st.session_state.project["current_chapter"] = list(st.session_state.project["manifest"]["chapters"].keys())[0]
+                                st.rerun()
                 else:
                     if st.button(f"📄 {file['name']}", key=f"file_{file['id']}"):
                         if not st.session_state.project["folder_id"]:
@@ -114,13 +123,8 @@ def browse_google_drive(service):
                             st.rerun()
 
         if st.session_state.project["folder_id"] and st.button("Save Project"):
-            manifest_content = json.dumps(st.session_state.project["manifest"])
-            manifest_file = next((f for f in list_drive_files(service, st.session_state.project["folder_id"]) if f["name"] == "manifest.json"), None)
-            if manifest_file:
-                service.files().update(fileId=manifest_file["id"], media_body=MediaIoBaseUpload(BytesIO(manifest_content.encode("utf-8")), mimetype="application/json")).execute()
-            else:
-                upload_file(service, manifest_content, "manifest.json", st.session_state.project["folder_id"])
-            st.success("Project saved!")
+            save_project_manifest(service)
+            
 
         if st.session_state.project["folder_id"]:
             st.write("### Chapters")
