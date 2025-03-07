@@ -52,6 +52,13 @@ def create_folder(service, folder_name, parent_id=None):
     folder = service.files().create(body=file_metadata, fields="id").execute()
     return folder.get("id")
 
+def clear_block_cache():
+    """Clear all block contents from session_state."""
+    if "block_cache" in st.session_state:
+        st.session_state.block_cache.clear()
+    if "changed_blocks" in st.session_state:
+        st.session_state.changed_blocks = []
+
 def browse_google_drive(service):
     """Google Drive browser with folder selection and creation."""
     if "folder_stack" not in st.session_state:
@@ -132,6 +139,7 @@ def browse_google_drive(service):
                 chapters = list(st.session_state.project["manifest"]["chapters"].keys())
                 new_target_chapter = st.selectbox("Current Chapter", chapters, index=chapters.index(st.session_state.project["current_chapter"]))
                 if new_target_chapter and new_target_chapter != st.session_state.project["current_chapter"]:
+                    clear_block_cache()  # Clear cache when switching chapters
                     st.session_state.project["current_chapter"] = new_target_chapter
                     st.rerun()
                 new_chapter = st.text_input("New Chapter Name")
