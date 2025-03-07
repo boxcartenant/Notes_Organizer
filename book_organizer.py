@@ -70,6 +70,7 @@ def body(service):
                 st.session_state.project["manifest"]["chapters"][target_chapter].append(block_to_move)
                 save_project_manifest(service)
                 st.rerun()
+                break
 
     if st.button("Add Empty Block"):
         block_id = f"block_{len(st.session_state.project['manifest']['chapters'][current_chapter])}"
