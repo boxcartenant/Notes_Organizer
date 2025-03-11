@@ -153,7 +153,8 @@ def body(service):
                         st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx + 1)
                         save_project_manifest(service)
                         st.rerun()
-                break
+                finally:
+                    break
         with col5:
             chapters = list(st.session_state.project["manifest"]["chapters"].keys())
             target_chapter = st.selectbox(f"Move {idx}", [""] + chapters, key=f"move_{block['id']}", label_visibility="collapsed")
