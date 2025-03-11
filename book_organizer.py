@@ -127,14 +127,13 @@ def body(service):
         block_id = f"block_{len(st.session_state.project['manifest']['chapters'][current_chapter])}"
         block_file_name = f"{block_id}.txt"
         new_file = upload_file(service, "", block_file_name, st.session_state.project["folder_id"])
-        st.write(new_file)
         st.session_state.project["manifest"]["chapters"][current_chapter].append({
             "id": block_id,
             "file_path": block_file_name,
-            "file_id": new_file["id"],  # Store file_id in manifest
+            "file_id": new_file,  # Store file_id in manifest
             "order": len(st.session_state.project["manifest"]["chapters"][current_chapter])
         })
-        st.session_state.block_cache[new_file["id"]] = ""  # Cache empty content
+        st.session_state.block_cache[new_file] = ""  # Cache empty content
         st.rerun()
 
     # Reset changed_blocks only on chapter switch (via clear_block_cache) or manual action, not here
