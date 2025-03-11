@@ -15,7 +15,7 @@ def save_project_manifest(service):
         service.files().update(fileId=manifest_file["id"], media_body=MediaIoBaseUpload(BytesIO(manifest_content.encode("utf-8")), mimetype="application/json")).execute()
     else:
         upload_file(service, manifest_content, "manifest.json", st.session_state.project["folder_id"])
-    st.success("Project saved!")
+    #st.success("Project saved!")
 
 def list_drive_files(service, folder_id=None):
     """List files and folders in Google Drive."""
