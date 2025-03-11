@@ -5,6 +5,7 @@ from googleapiclient.http import MediaIoBaseUpload
 from googleapiclient.errors import HttpError
 import logging
 import time
+from io import BytesIO
 
 logging.basicConfig(level=logging.INFO)
 
