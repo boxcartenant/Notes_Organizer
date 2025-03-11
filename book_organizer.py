@@ -151,12 +151,8 @@ def body(service):
                         logging.info(f"Deleted file: {next_block['file_id']}")
                     
                     st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx + 1)
-                    save_project_manifest(service)
-                    # Clear changed_blocks for this block to force fresh fetch on rerun
-                    if "file_id" in block and block["file_id"] in st.session_state.changed_blocks:
-                        st.session_state.changed_blocks.remove(block["file_id"])
                     clear_block_cache()
-                    st.rerun()
+                    save_project_manifest(service)
                 except HttpError as e:
                     logging.error(f"Error during merge: {e}")
                     if e.resp.status == 404 and "file_id" in next_block:
