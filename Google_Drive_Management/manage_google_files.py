@@ -66,8 +66,8 @@ def browse_google_drive(service):
     if "project" not in st.session_state:
         st.session_state.project = {
             "folder_id": None,
-            "manifest": {"chapters": {"Chapter 1": []}},
-            "current_chapter": "Chapter 1"
+            "manifest": {"chapters": {"Staging Area": []}},
+            "current_chapter": "Staging Area"
         }
 
     current_folder = st.session_state.folder_stack[-1] if st.session_state.folder_stack else None
@@ -104,12 +104,12 @@ def browse_google_drive(service):
                                 st.session_state.project["folder_name"] = file["name"]
                                 manifest_file = next((f for f in list_drive_files(service, file["id"]) if f["name"] == "manifest.json"), None)
                                 if not manifest_file:
-                                    upload_file(service, json.dumps({"chapters": {"Chapter 1": []}}), "manifest.json", file["id"])
+                                    upload_file(service, json.dumps({"chapters": {"Staging Area": []}}), "manifest.json", file["id"])
                                 else:
                                     manifest_content = download_file(manifest_file["id"], service)
                                     st.session_state.project["manifest"] = json.loads(manifest_content)
                                     if "chapters" not in st.session_state.project["manifest"]:
-                                        st.session_state.project["manifest"]["chapters"] = {"Chapter 1": []}
+                                        st.session_state.project["manifest"]["chapters"] = {"Staging Area": []}
                                     st.session_state.project["current_chapter"] = list(st.session_state.project["manifest"]["chapters"].keys())[0]
                                 st.rerun()
                 else:

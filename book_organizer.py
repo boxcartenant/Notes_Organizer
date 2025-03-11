@@ -33,8 +33,8 @@ def body(service):
     if "project" not in st.session_state:
         st.session_state.project = {
             "folder_id": None,
-            "manifest": {"chapters": {"Chapter 1": []}},
-            "current_chapter": "Chapter 1"
+            "manifest": {"chapters": {"Staging Area": []}},
+            "current_chapter": "Staging Area"
         }
     if "block_cache" not in st.session_state:
         st.session_state.block_cache = {}
