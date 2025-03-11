@@ -145,6 +145,7 @@ def browse_google_drive(service):
                 new_chapter = st.text_input("New Chapter Name")
                 if st.button("Add Chapter") and new_chapter and new_chapter not in chapters:
                     st.session_state.project["manifest"]["chapters"][new_chapter] = []
+                    st.success("Chapter Added!")
                     st.rerun()
 
 def create_auth_flow():

@@ -27,7 +27,7 @@ def download_file_wrapper(file_id, service, from_session_state=True):
 
 
 def body(service):
-    st.write("==DB Organizer==")
+    st.write("### ==DB Organizer==")
 
     # Ensure project and session state are initialized
     if "project" not in st.session_state:
@@ -98,15 +98,16 @@ def body(service):
                 next_block = blocks[idx + 1]
                 next_file = next((f for f in list_drive_files(service, st.session_state.project["folder_id"]) if f["name"] == next_block["file_path"]), None)
                 next_content = download_file_wrapper(next_file["id"], service) if next_file and "file_id" in next_block else ""
-                merged_content = block_content + "\n" + next_content
+                merged_content = block_content + "\n\n" + next_content
                 if existing_file:
                     media = MediaIoBaseUpload(BytesIO(merged_content.encode("utf-8")), mimetype="text/plain")
                     service.files().update(fileId=existing_file["id"], media_body=media).execute()
                     st.session_state.block_cache[existing_file["id"]] = merged_content
                     st.session_state.changed_blocks.add(existing_file["id"])
+                #the following code is intended to imitate col3
+                if next_file and next_file["id"] in st.session_state.block_cache:
+                    del st.session_state.block_cache[next_file["id"]]
                 if next_file:
-                    if next_file["id"] in st.session_state.block_cache:
-                        del st.session_state.block_cache[next_file["id"]]
                     service.files().delete(fileId=next_file["id"]).execute()
                 st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx + 1)
                 save_project_manifest(service)
