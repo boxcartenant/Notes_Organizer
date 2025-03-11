@@ -75,8 +75,8 @@ def body(service):
                 pass
             st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx)
             save_project_manifest(service)
-            st.rerun()
-            break
+            #st.rerun()
+            return
 
                                                                               
         unique_key = f"textblock_{block['id']}_{block.get('file_id', idx)}"
@@ -97,8 +97,8 @@ def body(service):
                 st.session_state.block_cache[new_file["id"]] = new_content
                 st.session_state.changed_blocks.add(new_file["id"])
             save_project_manifest(service)
-            st.rerun()
-            break
+            #st.rerun()
+            return
 
         col1, col2, col3, col4, col5 = st.columns(5)
         with col1:
@@ -106,15 +106,15 @@ def body(service):
                 blocks[idx]["order"], blocks[idx - 1]["order"] = blocks[idx - 1]["order"], blocks[idx]["order"]
                 st.session_state.project["manifest"]["chapters"][current_chapter] = blocks
                 save_project_manifest(service)
-                st.rerun()
-                break
+                #st.rerun()
+                return
         with col2:
             if st.button(f"⬇ {idx}", key=f"move_down_{block['id']}") and idx < len(blocks) - 1:
                 blocks[idx]["order"], blocks[idx + 1]["order"] = blocks[idx + 1]["order"], blocks[idx]["order"]
                 st.session_state.project["manifest"]["chapters"][current_chapter] = blocks
                 save_project_manifest(service)
-                st.rerun()
-                break
+                #st.rerun()
+                return
         with col3:
             if st.button(f"🗑 {idx}", key=f"delete_{block['id']}"):
                 if "file_id" in block and block["file_id"] in st.session_state.block_cache:
@@ -123,8 +123,8 @@ def body(service):
                     service.files().delete(fileId=block["file_id"]).execute()
                 st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx)
                 save_project_manifest(service)
-                st.rerun()
-                break
+                #st.rerun()
+                return
         with col4:
             if st.button(f"🔗 {idx}", key=f"merge_down_{block['id']}") and idx < len(blocks) - 1:
                 try:
@@ -133,8 +133,8 @@ def body(service):
                     if next_content == "HTTP 404":
                         st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx + 1)
                         save_project_manifest(service)
-                        st.rerun()
-                        break
+                        #st.rerun()
+                        return
                     merged_content = block_content + "\n\n" + next_content
                     
                     if "file_id" in block:
@@ -147,7 +147,6 @@ def body(service):
                     if "file_id" in next_block:
                         if next_block["file_id"] in st.session_state.block_cache:
                             del st.session_state.block_cache[next_block["file_id"]]
-                                                                                            
                         service.files().delete(fileId=next_block["file_id"]).execute()
                         logging.info(f"Deleted file: {next_block['file_id']}")
                     
@@ -162,9 +161,9 @@ def body(service):
                     if e.resp.status == 404 and "file_id" in next_block:
                         st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx + 1)
                         save_project_manifest(service)
-                        st.rerun()
+                        #st.rerun()
                 finally:        
-                    break
+                    return
         with col5:
             chapters = list(st.session_state.project["manifest"]["chapters"].keys())
             target_chapter = st.selectbox(f"Move {idx}", [""] + chapters, key=f"move_{block['id']}", label_visibility="collapsed")
@@ -178,8 +177,8 @@ def body(service):
                     st.session_state.block_cache[block_to_move["file_id"]] = block_content
                 st.session_state.project["manifest"]["chapters"][target_chapter].append(block_to_move)
                 save_project_manifest(service)
-                st.rerun()
-                break
+                #st.rerun()
+                return
 
     if st.button("Add Empty Block"):
         block_id = generate_unique_block_id(st.session_state.project["manifest"]["chapters"][current_chapter])
@@ -193,4 +192,4 @@ def body(service):
         })
         st.session_state.block_cache[new_file["id"]] = ""
         save_project_manifest(service)
-        st.rerun()
+        #st.rerun()
