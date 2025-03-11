@@ -5,8 +5,6 @@ from googleapiclient.http import MediaIoBaseUpload
 from googleapiclient.errors import HttpError
 import logging
 import time
-                      
-                      
 
 logging.basicConfig(level=logging.INFO)
 
@@ -33,7 +31,6 @@ def update_block_filepath(block, chapter):
     return block
 
 def generate_unique_block_id(chapter_blocks):
-                                                                          
     existing_ids = {block["id"] for block in chapter_blocks}
     i = len(chapter_blocks)
     while True:
@@ -79,12 +76,6 @@ def body(service):
             "manifest": {"chapters": {"Staging Area": []}},
             "current_chapter": "Staging Area"
         }
-                                             
-                                         
-                                                
-                                               
-                                                            
-                                                                              
 
     current_chapter = st.session_state.project["current_chapter"]
     blocks = sorted(st.session_state.project["manifest"]["chapters"][current_chapter], key=lambda x: x["order"])
@@ -93,20 +84,8 @@ def body(service):
     for idx, block in enumerate(blocks):
         new_content = render_block(idx, block, service, current_chapter)
         if new_content is None:  # Block was removed (404)
-                                      
-                                                                                                                          
-        
-                                       
-                                                                
-                                                                  
-                
-                                                                         
-                             
-                    
-                                                                                      
-                                          
             st.rerun()
-            break
+            return
 
         # Form for block actions
         with st.form(key=f"actions_{block['id']}_{idx}", clear_on_submit=True):
@@ -124,39 +103,18 @@ def body(service):
                 target_chapter = st.selectbox(f"Move {idx}", [""] + chapters, key=f"move_select_{block['id']}", label_visibility="collapsed")
 
             # Process form submission
-                                  
-                                                                                                      
-                                                                                           
-                                                                            
-                                                                     
-                                                                 
-                 
-                                                                        
-                                                                                                                    
-                                                     
-                                                 
-                                                                          
-                                                                   
-                                          
-                       
-                  
-
-                                                    
-                  
             if move_up:
                 blocks[idx]["order"], blocks[idx - 1]["order"] = blocks[idx - 1]["order"], blocks[idx]["order"]
                 st.session_state.project["manifest"]["chapters"][current_chapter] = blocks
                 save_project_manifest(service)
                 st.rerun()
-                      
-                  
+                return
             elif move_down:
                 blocks[idx]["order"], blocks[idx + 1]["order"] = blocks[idx + 1]["order"], blocks[idx]["order"]
                 st.session_state.project["manifest"]["chapters"][current_chapter] = blocks
                 save_project_manifest(service)
                 st.rerun()
-                      
-                  
+                return
             elif delete:
                 if "file_id" in block and block["file_id"] in block_content_store:
                     del block_content_store[block["file_id"]]
@@ -165,8 +123,7 @@ def body(service):
                 st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx)
                 save_project_manifest(service)
                 st.rerun()
-                      
-                  
+                return
             elif merge:
                 try:
                     next_block = blocks[idx + 1]
@@ -175,38 +132,29 @@ def body(service):
                         st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx + 1)
                         save_project_manifest(service)
                         st.rerun()
+                        return
                     else:
-                        merged_content = new_content + "\n\n" + next_content
-                    
+                        merged_content = new_content + "\n" + next_content
                         if "file_id" in block:
                             media = MediaIoBaseUpload(BytesIO(merged_content.encode("utf-8")), mimetype="text/plain")
                             service.files().update(fileId=block["file_id"], media_body=media).execute()
                             block_content_store[block["file_id"]] = merged_content
-                                                                             
                             logging.info(f"Updated file: {block['file_id']}")
-                    
                         if "file_id" in next_block:
                             if next_block["file_id"] in block_content_store:
                                 del block_content_store[next_block["file_id"]]
                             service.files().delete(fileId=next_block["file_id"]).execute()
                             logging.info(f"Deleted file: {next_block['file_id']}")
-                    
                         st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx + 1)
-                                       
                         save_project_manifest(service)
                         st.rerun()
+                        return
                 except HttpError as e:
                     logging.error(f"Error during merge: {e}")
                     if e.resp.status == 404 and "file_id" in next_block:
                         st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx + 1)
                         save_project_manifest(service)
                         st.rerun()
-                        
-                              
-                          
-                  
-                                                                                    
-                                                                                                                                  
             elif target_chapter and target_chapter != current_chapter:
                 block_to_move = st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx)
                 block_to_move["order"] = len(st.session_state.project["manifest"]["chapters"][target_chapter])
@@ -218,11 +166,11 @@ def body(service):
                 st.session_state.project["manifest"]["chapters"][target_chapter].append(block_to_move)
                 save_project_manifest(service)
                 st.rerun()
-                      
+                return
 
     if st.button("Add Empty Block"):
         block_id = generate_unique_block_id(st.session_state.project["manifest"]["chapters"][current_chapter])
-        block_file_name = f"{current_chapter}_{block_id}.txt"
+        block_file_name = f"{block_id}.txt"
         new_file = upload_file(service, "", block_file_name, st.session_state.project["folder_id"])
         st.session_state.project["manifest"]["chapters"][current_chapter].append({
             "id": block_id,
@@ -233,3 +181,4 @@ def body(service):
         block_content_store[new_file["id"]] = ""
         save_project_manifest(service)
         st.rerun()
+        return
