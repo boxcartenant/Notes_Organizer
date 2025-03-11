@@ -153,7 +153,7 @@ def body(service):
                     st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx + 1)
                     clear_block_cache()
                     save_project_manifest(service)
-
+                    logging.info(f"Stuff is disappearing!")
                 except HttpError as e:
                     logging.error(f"Error during merge: {e}")
                     if e.resp.status == 404 and "file_id" in next_block:
