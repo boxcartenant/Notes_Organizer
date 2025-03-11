@@ -40,6 +40,8 @@ def body(service):
         st.session_state.block_cache = {}
     if "changed_blocks" not in st.session_state:
         st.session_state.changed_blocks = set()  # Initialize as a set for unique IDs
+    if isinstance(st.session_state.changed_blocks, list):
+        st.session_state.changed_blocks = set(st.session_state.changed_blocks) #for some reason, st keeps turning this into a list...
 
     current_chapter = st.session_state.project["current_chapter"]
     blocks = sorted(st.session_state.project["manifest"]["chapters"][current_chapter], key=lambda x: x["order"])
