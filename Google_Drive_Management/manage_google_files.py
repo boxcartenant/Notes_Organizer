@@ -57,7 +57,7 @@ def clear_block_cache():
     if "block_cache" in st.session_state:
         st.session_state.block_cache.clear()
     if "changed_blocks" in st.session_state:
-        st.session_state.changed_blocks = set()  #changed blocks to new empty set
+        st.session_state.changed_blocks.clear()  #changed blocks to new empty set
 
 def browse_google_drive(service):
     """Google Drive browser with folder selection and creation."""
