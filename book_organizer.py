@@ -3,6 +3,8 @@ from Google_Drive_Management.manage_google_files import browse_google_drive, dow
 from google.oauth2.credentials import Credentials
 from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload
 from io import BytesIO
+from googleapiclient.errors import HttpError
+import re
 
 # === Book Organizer ===
 # These functions are for grabbing and rearranging text in my many notes,
@@ -21,9 +23,23 @@ def download_file_wrapper(file_id, service, from_session_state=True):
         return st.session_state.block_cache[file_id]
     
     # Fetch from Google Drive and update session_state
-    content = download_file(file_id, service)
-    st.session_state.block_cache[file_id] = content
-    return content
+    try:
+        content = download_file(file_id, service)
+        st.session_state.block_cache[file_id] = content
+        return content
+    except HttpError as error:
+        if error.resp.status == 404:
+            error_message = error._get_reason()
+            match = re.search(r'File not found: ([\w-]+)', error_message)
+            if match:
+                file_key = match.group(1)
+                print(f"File key extracted: {file_key}")
+            else:
+                print("File key not found in the error message.")
+            return "HTTP 404"
+        else:
+            raise  # Re-raise the error if it's not a 404
+    
 
 
 def body(service):
@@ -54,6 +70,16 @@ def body(service):
             from_session_state = False
         # Get contents of block
         block_content = download_file_wrapper(block["file_id"], service, from_session_state) if "file_id" in block else ""
+        if block_content == "HTTP 404":
+            #the following code is intended to imitate col3
+            if existing_file and existing_file["id"] in st.session_state.block_cache:
+                del st.session_state.block_cache[existing_file["id"]]
+            if existing_file:
+                service.files().delete(fileId=existing_file["id"]).execute()
+            st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx)
+            save_project_manifest(service)
+            st.rerun()
+
         new_content = st.text_area(f"Block {idx + 1} ({current_chapter})", value=block_content, key=f"textblock_{block['id']}")
 
         # Save changed/new files to Google Drive and update cache
