@@ -1,5 +1,5 @@
 import streamlit as st
-from Google_Drive_Management.manage_google_files import browse_google_drive, download_file, upload_file, build, list_drive_files, save_project_manifest
+from Google_Drive_Management.manage_google_files import browse_google_drive, download_file, upload_file, build, list_drive_files, save_project_manifest, clear_block_cache
 from google.oauth2.credentials import Credentials
 from googleapiclient.http import MediaIoBaseUpload
 from googleapiclient.errors import HttpError
@@ -155,6 +155,7 @@ def body(service):
                     # Clear changed_blocks for this block to force fresh fetch on rerun
                     if "file_id" in block and block["file_id"] in st.session_state.changed_blocks:
                         st.session_state.changed_blocks.remove(block["file_id"])
+                    clear_block_cache()
                     st.rerun()
                 except HttpError as e:
                     logging.error(f"Error during merge: {e}")
