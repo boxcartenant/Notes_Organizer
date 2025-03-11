@@ -113,7 +113,7 @@ def body(service):
                 blocks[idx]["order"], blocks[idx + 1]["order"] = blocks[idx + 1]["order"], blocks[idx]["order"]
                 st.session_state.project["manifest"]["chapters"][current_chapter] = blocks
                 save_project_manifest(service)
-                st.rerun()
+                #st.rerun()
                 break
         with col3:
             if st.button(f"🗑 {idx}", key=f"delete_{block['id']}"):
@@ -123,7 +123,7 @@ def body(service):
                     service.files().delete(fileId=block["file_id"]).execute()
                 st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx)
                 save_project_manifest(service)
-                st.rerun()
+                #st.rerun()
                 break
         with col4:
             if st.button(f"🔗 {idx}", key=f"merge_down_{block['id']}") and idx < len(blocks) - 1:
