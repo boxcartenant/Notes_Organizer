@@ -4,7 +4,8 @@ from google.oauth2.credentials import Credentials
 from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload
 from io import BytesIO
 from googleapiclient.errors import HttpError
-import re
+import re, logging
+logging.basicConfig(level=logging.INFO)
 
 # === Book Organizer ===
 # These functions are for grabbing and rearranging text in my many notes,
@@ -123,23 +124,32 @@ def body(service):
                 break
         with col4:
             if st.button(f"🔗 {idx}", key=f"merge_down_{block['id']}") and idx < len(blocks) - 1:
-                next_block = blocks[idx + 1]
-                next_file = next((f for f in list_drive_files(service, st.session_state.project["folder_id"]) if f["name"] == next_block["file_path"]), None)
-                next_content = download_file_wrapper(next_file["id"], service) if next_file and "file_id" in next_block else ""
-                merged_content = block_content + "\n\n" + next_content
-                if existing_file:
-                    media = MediaIoBaseUpload(BytesIO(merged_content.encode("utf-8")), mimetype="text/plain")
-                    service.files().update(fileId=existing_file["id"], media_body=media).execute()
-                    st.session_state.block_cache[existing_file["id"]] = merged_content
-                    st.session_state.changed_blocks.add(existing_file["id"])
-                #the following code is intended to imitate col3
-                if next_file and next_file["id"] in st.session_state.block_cache:
-                    del st.session_state.block_cache[next_file["id"]]
-                if next_file:
-                    service.files().delete(fileId=next_file["id"]).execute()
-                st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx + 1)
-                save_project_manifest(service)
-                st.rerun()
+                try:
+                    next_block = blocks[idx + 1]
+                    next_file = next((f for f in list_drive_files(service, st.session_state.project["folder_id"]) if f["name"] == next_block["file_path"]), None)
+                    next_content = download_file_wrapper(next_file["id"], service) if next_file and "file_id" in next_block else ""
+                    merged_content = block_content + "\n\n" + next_content
+                    
+                    if existing_file:
+                        media = MediaIoBaseUpload(BytesIO(merged_content.encode("utf-8")), mimetype="text/plain")
+                        service.files().update(fileId=existing_file["id"], media_body=media).execute()
+                        st.session_state.block_cache[existing_file["id"]] = merged_content
+                        st.session_state.changed_blocks.add(existing_file["id"])
+                        logging.info(f"Updated file: {existing_file['id']}")
+                    
+                    if next_file and next_file["id"] in st.session_state.block_cache:
+                        del st.session_state.block_cache[next_file["id"]]
+                        logging.info(f"Deleted cache for file: {next_file['id']}")
+                    
+                    if next_file:
+                        service.files().delete(fileId=next_file["id"]).execute()
+                        logging.info(f"Deleted file: {next_file['id']}")
+                    
+                    st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx + 1)
+                    save_project_manifest(service)
+                    st.rerun()
+                except Exception as e:
+                    logging.error(f"Error during file operations: {e}")
                 break
         with col5:
             chapters = list(st.session_state.project["manifest"]["chapters"].keys())
@@ -154,7 +164,7 @@ def body(service):
 
     if st.button("Add Empty Block"):
         block_id = f"block_{len(st.session_state.project['manifest']['chapters'][current_chapter])}"
-        block_file_name = f"{block_id}.txt"
+        block_file_name = f"{current_chapter}_{block_id}.txt"
         new_file = upload_file(service, "", block_file_name, st.session_state.project["folder_id"])
         st.session_state.project["manifest"]["chapters"][current_chapter].append({
             "id": block_id,
