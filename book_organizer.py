@@ -27,7 +27,7 @@ def download_file_wrapper(file_id, service, from_session_state=True):
 
 
 def body(service):
-    st.write("### ==DB Organizer==")
+    st.write("### == DB Organizer ==")
 
     # Ensure project and session state are initialized
     if "project" not in st.session_state:
