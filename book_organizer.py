@@ -118,7 +118,7 @@ def body(service):
                 st.rerun()
                 break
         with col4:
-            if st.button(f"🔗 {idx}", key=f"merge_down_{block['id']}") and idx < len(blocks) - 1):
+            if st.button(f"🔗 {idx}", key=f"merge_down_{block['id']}") and (idx < len(blocks) - 1):
                 try:
                     next_block = blocks[idx + 1]
                     next_file = next((f for f in list_drive_files(service, st.session_state.project["folder_id"]) if f["name"] == next_block["file_path"]), None)
