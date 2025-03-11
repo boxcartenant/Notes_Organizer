@@ -36,11 +36,11 @@ def download_file(file_id, service):
     return file_stream.getvalue().decode("utf-8")
 
 def upload_file(service, file_content, file_name, folder_id=None):
-    """Upload a file to Google Drive."""
+    """Upload a file to Google Drive and return the file object."""
     file_metadata = {"name": file_name, "parents": [folder_id] if folder_id else []}
-    media = MediaIoBaseUpload(BytesIO(file_content.encode("utf-8")), mimetype="text/plain")  # Changed to MediaIoBaseUpload
-    file = service.files().create(body=file_metadata, media_body=media, fields="id").execute()
-    return file.get("id")
+    media = MediaIoBaseUpload(BytesIO(file_content.encode("utf-8")), mimetype="text/plain")
+    file = service.files().create(body=file_metadata, media_body=media, fields="id, name").execute()
+    return file  # Returns {"id": "abc123", "name": "file_name.txt"}
 
 def create_folder(service, folder_name, parent_id=None):
     """Create a new folder in Google Drive."""

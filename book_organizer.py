@@ -1,19 +1,13 @@
 import streamlit as st
 from Google_Drive_Management.manage_google_files import browse_google_drive, download_file, upload_file, build, list_drive_files, save_project_manifest
 from google.oauth2.credentials import Credentials
-from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload
-from io import BytesIO
+from googleapiclient.http import MediaIoBaseUpload
 from googleapiclient.errors import HttpError
-import re, logging
+import time
+from io import BytesIO
+import logging
+
 logging.basicConfig(level=logging.INFO)
-
-# === Book Organizer ===
-# These functions are for grabbing and rearranging text in my many notes,
-#  and for saving their new arrangement in some kind of book file that I 
-#  haven't structured yet.
-# 
-# So far, you can add, delete, and rearrange text blocks.
-
 
 def download_file_wrapper(file_id, service, from_session_state=True):
     """Wrapper for download_file to fetch from session_state or Google Drive."""
@@ -23,30 +17,26 @@ def download_file_wrapper(file_id, service, from_session_state=True):
     if from_session_state and file_id in st.session_state.block_cache:
         return st.session_state.block_cache[file_id]
     
-    # Fetch from Google Drive and update session_state
     try:
         content = download_file(file_id, service)
         st.session_state.block_cache[file_id] = content
         return content
     except HttpError as error:
         if error.resp.status == 404:
-            error_message = error._get_reason()
-            match = re.search(r'File not found: ([\w-]+)', error_message)
-            if match:
-                file_key = match.group(1)
-                print(f"File key extracted: {file_key}")
-            else:
-                print("File key not found in the error message.")
+            logging.warning(f"File not found: {file_id}")
             return "HTTP 404"
-        else:
-            raise  # Re-raise the error if it's not a 404
-    
+        raise
 
+def update_block_filepath(block, chapter):
+    """Update a block's file_path to include chapter prefix."""
+    if "file_id" in block:
+        block["file_path"] = f"{chapter}_{block['id']}.txt"
+    return block
 
 def body(service):
     st.write("#### == DB Organizer ==")
 
-    # Ensure project and session state are initialized
+    # Initialize session state
     if "project" not in st.session_state:
         st.session_state.project = {
             "folder_id": None,
@@ -56,44 +46,49 @@ def body(service):
     if "block_cache" not in st.session_state:
         st.session_state.block_cache = {}
     if "changed_blocks" not in st.session_state:
-        st.session_state.changed_blocks = set()  # Initialize as a set for unique IDs
-    if isinstance(st.session_state.changed_blocks, list):
-        st.session_state.changed_blocks = set(st.session_state.changed_blocks) #for some reason, st keeps turning this into a list...
+        st.session_state.changed_blocks = set()
+
+    # Enforce set type (workaround for Streamlit serialization)
+    if not isinstance(st.session_state.changed_blocks, set):
+        st.session_state.changed_blocks = set(st.session_state.changed_blocks)
 
     current_chapter = st.session_state.project["current_chapter"]
     blocks = sorted(st.session_state.project["manifest"]["chapters"][current_chapter], key=lambda x: x["order"])
 
     for idx, block in enumerate(blocks):
         existing_file = next((f for f in list_drive_files(service, st.session_state.project["folder_id"]) if f["name"] == block["file_path"]), None)
-        # Check whether this block needs to be re-cached
         from_session_state = True
         if "file_id" in block and block["file_id"] in st.session_state.changed_blocks:
             from_session_state = False
-        # Get contents of block
         block_content = download_file_wrapper(block["file_id"], service, from_session_state) if "file_id" in block else ""
+        
         if block_content == "HTTP 404":
-            #the following code is intended to imitate col3
+            logging.info(f"Removing missing block {block['id']} from manifest")
             if existing_file and existing_file["id"] in st.session_state.block_cache:
                 del st.session_state.block_cache[existing_file["id"]]
             if existing_file:
-                service.files().delete(fileId=existing_file["id"]).execute()
+                try:
+                    service.files().delete(fileId=existing_file["id"]).execute()
+                except HttpError:
+                    pass  # File already gone
             st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx)
             save_project_manifest(service)
             st.rerun()
+            break
 
         new_content = st.text_area(f"Block {idx + 1} ({current_chapter})", value=block_content, key=f"textblock_{block['id']}")
 
-        # Save changed/new files to Google Drive and update cache
         if new_content != block_content:
-            if existing_file:
+            if "file_id" in block:
                 media = MediaIoBaseUpload(BytesIO(new_content.encode("utf-8")), mimetype="text/plain")
-                service.files().update(fileId=existing_file["id"], media_body=media).execute()
-                st.session_state.block_cache[existing_file["id"]] = new_content  # Sync cache
-                st.session_state.changed_blocks.add(existing_file["id"])  # Track change
+                service.files().update(fileId=block["file_id"], media_body=media).execute()
+                st.session_state.block_cache[block["file_id"]] = new_content
+                st.session_state.changed_blocks.add(block["file_id"])
             else:
-                new_file = upload_file(service, new_content, block["file_path"], st.session_state.project["folder_id"])
-                block["file_path"] = new_file["name"]
-                block["file_id"] = new_file["id"]  # Ensure file_id is stored in manifest
+                block_file_name = f"{current_chapter}_{block['id']}.txt"
+                new_file = upload_file(service, new_content, block_file_name, st.session_state.project["folder_id"])
+                block["file_path"] = block_file_name
+                block["file_id"] = new_file["id"]
                 st.session_state.block_cache[new_file["id"]] = new_content
                 st.session_state.changed_blocks.add(new_file["id"])
 
@@ -114,42 +109,50 @@ def body(service):
                 break
         with col3:
             if st.button(f"🗑 {idx}", key=f"delete_{block['id']}"):
-                if existing_file and existing_file["id"] in st.session_state.block_cache:
-                    del st.session_state.block_cache[existing_file["id"]]
-                if existing_file:
-                    service.files().delete(fileId=existing_file["id"]).execute()
+                if "file_id" in block and block["file_id"] in st.session_state.block_cache:
+                    del st.session_state.block_cache[block["file_id"]]
+                if "file_id" in block:
+                    service.files().delete(fileId=block["file_id"]).execute()
                 st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx)
                 save_project_manifest(service)
                 st.rerun()
                 break
         with col4:
-            if st.button(f"🔗 {idx}", key=f"merge_down_{block['id']}") and idx < len(blocks) - 1:
+            if st.button(f"🔗 {idx}", key=f"merge_down_{block['id']}") and idx < len(blocks) - 1):
                 try:
                     next_block = blocks[idx + 1]
                     next_file = next((f for f in list_drive_files(service, st.session_state.project["folder_id"]) if f["name"] == next_block["file_path"]), None)
-                    next_content = download_file_wrapper(next_file["id"], service) if next_file and "file_id" in next_block else ""
+                    next_content = download_file_wrapper(next_block["file_id"], service) if "file_id" in next_block else ""
+                    if next_content == "HTTP 404":
+                        st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx + 1)
+                        save_project_manifest(service)
+                        st.rerun()
+                        break
                     merged_content = block_content + "\n\n" + next_content
                     
-                    if existing_file:
+                    if "file_id" in block:
                         media = MediaIoBaseUpload(BytesIO(merged_content.encode("utf-8")), mimetype="text/plain")
-                        service.files().update(fileId=existing_file["id"], media_body=media).execute()
-                        st.session_state.block_cache[existing_file["id"]] = merged_content
-                        st.session_state.changed_blocks.add(existing_file["id"])
-                        logging.info(f"Updated file: {existing_file['id']}")
-                    
-                    if next_file and next_file["id"] in st.session_state.block_cache:
-                        del st.session_state.block_cache[next_file["id"]]
-                        logging.info(f"Deleted cache for file: {next_file['id']}")
+                        service.files().update(fileId=block["file_id"], media_body=media).execute()
+                        st.session_state.block_cache[block["file_id"]] = merged_content
+                        st.session_state.changed_blocks.add(block["file_id"])
+                        logging.info(f"Updated file: {block["file_id"]}")
                     
                     if next_file:
+                        if next_file["id"] in st.session_state.block_cache:
+                            del st.session_state.block_cache[next_file["id"]]
+                            logging.info(f"Deleted cache for file: {next_file['id']}")
                         service.files().delete(fileId=next_file["id"]).execute()
                         logging.info(f"Deleted file: {next_file['id']}")
                     
                     st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx + 1)
                     save_project_manifest(service)
                     st.rerun()
-                except Exception as e:
-                    logging.error(f"Error during file operations: {e}")
+                except HttpError as e:
+                    logging.error(f"Error during merge: {e}")
+                    if e.resp.status == 404:
+                        st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx + 1)
+                        save_project_manifest(service)
+                        st.rerun()
                 break
         with col5:
             chapters = list(st.session_state.project["manifest"]["chapters"].keys())
@@ -157,23 +160,25 @@ def body(service):
             if target_chapter and target_chapter != current_chapter:
                 block_to_move = st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx)
                 block_to_move["order"] = len(st.session_state.project["manifest"]["chapters"][target_chapter])
+                block_to_move = update_block_filepath(block_to_move, target_chapter)
+                if "file_id" in block:
+                    media = MediaIoBaseUpload(BytesIO(block_content.encode("utf-8")), mimetype="text/plain")
+                    service.files().update(fileId=block["file_id"], media_body=media, body={"name": block_to_move["file_path"]}).execute()
+                    st.session_state.block_cache[block["file_id"]] = block_content
                 st.session_state.project["manifest"]["chapters"][target_chapter].append(block_to_move)
                 save_project_manifest(service)
                 st.rerun()
                 break
 
     if st.button("Add Empty Block"):
-        block_id = f"block_{len(st.session_state.project['manifest']['chapters'][current_chapter])}"
-        block_file_name = f"{current_chapter}_{block_id}.txt"
+        block_id = f"block_{len(st.session_state.project['manifest']['chapters'][current_chapter])}_{int(time.time())}"
+        block_file_name = f"{block_id}.txt"
         new_file = upload_file(service, "", block_file_name, st.session_state.project["folder_id"])
         st.session_state.project["manifest"]["chapters"][current_chapter].append({
             "id": block_id,
-            "file_path": block_file_name,
-            "file_id": new_file,  # Store file_id in manifest
+            "file_path": new_file["name"],
+            "file_id": new_file["id"],
             "order": len(st.session_state.project["manifest"]["chapters"][current_chapter])
         })
-        st.session_state.block_cache[new_file] = ""  # Cache empty content
+        st.session_state.block_cache[new_file["id"]] = ""
         st.rerun()
-
-    # Reset changed_blocks only on chapter switch (via clear_block_cache) or manual action, not here
-
