@@ -153,13 +153,15 @@ def body(service):
                     st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx + 1)
                     clear_block_cache()
                     save_project_manifest(service)
+
                 except HttpError as e:
                     logging.error(f"Error during merge: {e}")
                     if e.resp.status == 404 and "file_id" in next_block:
                         st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx + 1)
                         save_project_manifest(service)
                         #st.rerun()
-                finally:        
+                finally:
+                    st.rerun()
                     return
         with col5:
             chapters = list(st.session_state.project["manifest"]["chapters"].keys())
