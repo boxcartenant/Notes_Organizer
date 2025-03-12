@@ -50,7 +50,7 @@ def decrement_orders_after(blocks, start_idx):
 
 def remove_block_from_manifest(this_chapter, this_chapter_blocks, idx):
     manifest_blocks = st.session_state.project["manifest"]["chapters"][this_chapter]
-    block_to_remove = next(b for b in manifest_blocks if b["order"] == this_chapter_blocks["order"])
+    block_to_remove = next(b for b in manifest_blocks if b["order"] == this_chapter_blocks[idx]["order"])
     manifest_blocks.remove(block_to_remove)
     decrement_orders_after(this_chapter_blocks, idx)
     st.session_state.project["manifest"]["chapters"][this_chapter] = this_chapter_blocks
