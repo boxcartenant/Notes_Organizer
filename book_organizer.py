@@ -181,7 +181,7 @@ def body(service):
                     service.files().update(fileId=this_block_id, media_body=media, body={"name": block_to_move["file_path"]}).execute()
 
                     #update the block content store
-                    block_content_store[this_block_id] = new_content
+                    #block_content_store[this_block_id] = this_block_contents
 
                     #add the block back into the manifest
                     st.session_state.project["manifest"]["chapters"][target_chapter].append(blocks[this_block_id])
