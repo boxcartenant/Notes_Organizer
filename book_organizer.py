@@ -128,7 +128,10 @@ def body(service):
                 if "file_id" in block:
                     service.files().delete(fileId=block["file_id"]).execute()
                 st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx)
+                block_to_remove = next(b for b in manifest_blocks if b["order"] == block["order"])
+                manifest_blocks.remove(block_to_remove)
                 decrement_orders_after(blocks, idx)
+                st.session_state.project["manifest"]["chapters"][current_chapter] = blocks
                 save_project_manifest(service)
                 st.rerun()
                 break
@@ -138,7 +141,11 @@ def body(service):
                     next_content = download_file_wrapper(next_block["file_id"], service) if "file_id" in next_block else ""
                     if next_content == "HTTP 404":
                         logging.info(f"Removing missing block: {next_block['file_id']}")
-                        st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx + 1)
+                        manifest_blocks = st.session_state.project["manifest"]["chapters"][current_chapter]
+                        block_to_remove = next(b for b in manifest_blocks if b["order"] == next_block["order"])
+                        manifest_blocks.remove(block_to_remove)
+                        decrement_orders_after(blocks, idx + 1)
+                        st.session_state.project["manifest"]["chapters"][current_chapter] = blocks
                         save_project_manifest(service)
                         st.rerun()
                         break
@@ -153,8 +160,11 @@ def body(service):
                                 del block_content_store[next_block["file_id"]]
                             service.files().delete(fileId=next_block["file_id"]).execute()
                             logging.info(f"Deleted file: {next_block['file_path']}")
-                        st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx + 1)
-                        decrement_orders_after(blocks, idx)
+                        manifest_blocks = st.session_state.project["manifest"]["chapters"][current_chapter]
+                        block_to_remove = next(b for b in manifest_blocks if b["order"] == next_block["order"])
+                        manifest_blocks.remove(block_to_remove)
+                        decrement_orders_after(blocks, idx + 1)
+                        st.session_state.project["manifest"]["chapters"][current_chapter] = blocks
                         save_project_manifest(service)
                         st.rerun()
                         break
@@ -164,7 +174,11 @@ def body(service):
                 except HttpError as e:
                     logging.error(f"Error during merge: {e}")
                     if e.resp.status == 404 and "file_id" in next_block:
-                        st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx + 1)
+                        manifest_blocks = st.session_state.project["manifest"]["chapters"][current_chapter]
+                        block_to_remove = next(b for b in manifest_blocks if b["order"] == next_block["order"])
+                        manifest_blocks.remove(block_to_remove)
+                        decrement_orders_after(blocks, idx + 1)
+                        st.session_state.project["manifest"]["chapters"][current_chapter] = blocks
                         save_project_manifest(service)
                         st.rerun()
                         break
@@ -173,16 +187,18 @@ def body(service):
                     #capture this and the next block
                     this_block_id = block["file_id"]
                     next_block_id = blocks[idx+1]["file_id"]
+                    this_block_order = block["order"]
                     this_block_contents = block_content_store[this_block_id]
                     next_block_contents = block_content_store[next_block_id]
                     logging.info(f"block contents (this, next): ({this_block_contents},{next_block_contents})")
 
                     
+                    
 
                     #move the file on google drive
                     logging.info(f"moving file: {block['file_path']} with content {new_content}")
                     block["order"] = len(st.session_state.project["manifest"]["chapters"][target_chapter])
-                    decrement_orders_after(blocks, idx)
+                    
                     block = update_block_filepath(block, target_chapter)
                     media = MediaIoBaseUpload(BytesIO(new_content.encode("utf-8")), mimetype="text/plain")
                     service.files().update(fileId=this_block_id, media_body=media, body={"name": block["file_path"]}).execute()
@@ -194,12 +210,18 @@ def body(service):
                     #add the block back into the new chapter manifest
                     st.session_state.project["manifest"]["chapters"][target_chapter].append(block)
                     #remove the block from the old chapter manifest
-                    st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx)
+                    # Find and remove by order, not idx
+                    manifest_blocks = st.session_state.project["manifest"]["chapters"][current_chapter]
+                    block_to_move = next(b for b in manifest_blocks if b["order"] == this_block_order)
+                    manifest_blocks.remove(block_to_move)
+
                     logging.info(f"Moved file: {block['file_path']} with content {new_content}")
                     logging.info(f"block contents local (this, next): ({this_block_contents},{next_block_contents})")
                     logging.info(f"block contents from store: ({block_content_store[this_block_id]},{block_content_store[next_block_id]})")
 
-                    #save the manifest
+                    #update block orders and save the manifest
+                    decrement_orders_after(blocks, idx)
+                    st.session_state.project["manifest"]["chapters"][current_chapter] = blocks
                     save_project_manifest(service)
                     st.rerun()
                     break
