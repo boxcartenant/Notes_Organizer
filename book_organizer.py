@@ -178,7 +178,7 @@ def body(service):
                     blocks[this_block_id]["order"] = len(st.session_state.project["manifest"]["chapters"][target_chapter])
                     blocks[this_block_id] = update_block_filepath(blocks[this_block_id], target_chapter)
                     media = MediaIoBaseUpload(BytesIO(new_content.encode("utf-8")), mimetype="text/plain")
-                    service.files().update(fileId=this_block_id], media_body=media, body={"name": block_to_move["file_path"]}).execute()
+                    service.files().update(fileId=this_block_id, media_body=media, body={"name": block_to_move["file_path"]}).execute()
 
                     #update the block content store
                     block_content_store[this_block_id] = new_content
