@@ -7,6 +7,7 @@ import logging
 import time
 from io import BytesIO
 
+logging.getLogger('googleapiclient.discovery_cache').setLevel(logging.ERROR)
 logging.basicConfig(level=logging.INFO)
 
 block_content_store = {}
@@ -65,7 +66,7 @@ def render_block(idx, block, service, current_chapter):
     return new_content
 
 def body(service):
-    st.write("#### == DB Organizer ==")
+    st.write(f"#### == DB {current_chapter} ==")
 
     if "project" not in st.session_state:
         st.session_state.project = {
@@ -135,12 +136,12 @@ def body(service):
                         media = MediaIoBaseUpload(BytesIO(merged_content.encode("utf-8")), mimetype="text/plain")
                         service.files().update(fileId=block["file_id"], media_body=media).execute()
                         block_content_store[block["file_id"]] = merged_content
-                        logging.info(f"Merged into file: {block['file_id']}")
+                        logging.info(f"Merged into file: {block['file_path']}")
                         if "file_id" in next_block:
                             if next_block["file_id"] in block_content_store:
                                 del block_content_store[next_block["file_id"]]
                             service.files().delete(fileId=next_block["file_id"]).execute()
-                            logging.info(f"Deleted file: {next_block['file_id']}")
+                            logging.info(f"Deleted file: {next_block['file_path']}")
                         st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx + 1)
                         save_project_manifest(service)
                         st.rerun()
