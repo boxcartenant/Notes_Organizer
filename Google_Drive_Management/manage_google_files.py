@@ -83,11 +83,13 @@ def browse_google_drive(service):
         st.write(f"**Current Project Folder**: {project_folder_name}")
 
         with st.expander("Create New Folder", expanded=False):
-            new_folder_name = st.text_input("Folder Name", key="new_folder_name")
-            if st.button("Create", key="create_folder") and new_folder_name:
-                new_folder_id = create_folder(service, new_folder_name, current_folder)
-                st.success(f"Created folder: {new_folder_name}")
-                st.rerun()
+            with st.form(key="Create_New_Folder", clear_on_submit = True, enter_to_submit = True, border = False):
+                new_folder_name = st.text_input("Folder Name", key="new_folder_name")
+                submitted = st.form_submit_button("Create")
+                if submitted and new_folder_name:
+                    new_folder_id = create_folder(service, new_folder_name, current_folder)
+                    st.success(f"Created folder: {new_folder_name}")
+                    st.rerun()
 
         with st.expander("Folders and Files", expanded=True):
             for file in files:
@@ -142,11 +144,13 @@ def browse_google_drive(service):
                     clear_block_cache()  # Clear cache when switching chapters
                     st.session_state.project["current_chapter"] = new_target_chapter
                     st.rerun()
-                new_chapter = st.text_input("New Chapter Name")
-                if st.button("Add Chapter") and new_chapter and new_chapter not in chapters:
-                    st.session_state.project["manifest"]["chapters"][new_chapter] = []
-                    st.success("Chapter Added!")
-                    st.rerun()
+                with st.form(key = "New_Chapter_Name", clear_on_submit = True, enter_to_submit = True):
+                    new_chapter = st.text_input("New Chapter Name")
+                    submitted = st.form_submit_button("Add Chapter",disabled = not (new_chapter and new_chapter not in chapters))
+                    if submitted:
+                        st.session_state.project["manifest"]["chapters"][new_chapter] = []
+                        st.success("Chapter Added!")
+                        st.rerun()
 
 def create_auth_flow():
     """Create an OAuth flow using Streamlit secrets."""
