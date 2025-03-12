@@ -53,6 +53,7 @@ def remove_block_from_manifest(this_chapter, this_chapter_blocks, idx):
     block_to_remove = next(b for b in manifest_blocks if b["order"] == this_chapter_blocks[idx]["order"])
     manifest_blocks.remove(block_to_remove)
     decrement_orders_after(this_chapter_blocks, idx)
+    this_chapter_blocks.pop(idx)
     st.session_state.project["manifest"]["chapters"][this_chapter] = this_chapter_blocks
 
 @st.fragment
