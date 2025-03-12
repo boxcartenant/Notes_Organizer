@@ -43,6 +43,11 @@ def clear_block_content_store():
     global block_content_store
     block_content_store = {}
 
+def decrement_orders_after(blocks, start_idx):
+    """Decrement the 'order' value for all blocks after start_idx."""
+    for i in range(start_idx, len(blocks)):
+        blocks[i]["order"] -= 1
+
 @st.fragment
 def render_block(idx, block, service, current_chapter):
     global block_content_store
@@ -123,6 +128,7 @@ def body(service):
                 if "file_id" in block:
                     service.files().delete(fileId=block["file_id"]).execute()
                 st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx)
+                decrement_orders_after(blocks, idx)
                 save_project_manifest(service)
                 st.rerun()
                 break
@@ -148,6 +154,7 @@ def body(service):
                             service.files().delete(fileId=next_block["file_id"]).execute()
                             logging.info(f"Deleted file: {next_block['file_path']}")
                         st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx + 1)
+                        decrement_orders_after(blocks, idx)
                         save_project_manifest(service)
                         st.rerun()
                         break
@@ -170,21 +177,24 @@ def body(service):
                     next_block_contents = block_content_store[next_block_id]
                     logging.info(f"block contents (this, next): ({this_block_contents},{next_block_contents})")
 
-                    #remove the block from the manifest
-                    st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx)
+                    
 
                     #move the file on google drive
                     logging.info(f"moving file: {block['file_path']} with content {new_content}")
                     block["order"] = len(st.session_state.project["manifest"]["chapters"][target_chapter])
+                    decrement_orders_after(blocks, idx)
                     block = update_block_filepath(block, target_chapter)
                     media = MediaIoBaseUpload(BytesIO(new_content.encode("utf-8")), mimetype="text/plain")
                     service.files().update(fileId=this_block_id, media_body=media, body={"name": block["file_path"]}).execute()
 
+
                     #update the block content store
                     #block_content_store[this_block_id] = this_block_contents
 
-                    #add the block back into the manifest
+                    #add the block back into the new chapter manifest
                     st.session_state.project["manifest"]["chapters"][target_chapter].append(block)
+                    #remove the block from the old chapter manifest
+                    st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx)
                     logging.info(f"Moved file: {block['file_path']} with content {new_content}")
                     logging.info(f"block contents local (this, next): ({this_block_contents},{next_block_contents})")
                     logging.info(f"block contents from store: ({block_content_store[this_block_id]},{block_content_store[next_block_id]})")
