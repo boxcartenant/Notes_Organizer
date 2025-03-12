@@ -62,7 +62,7 @@ def render_block(idx, block, service, current_chapter):
         media = MediaIoBaseUpload(BytesIO(new_content.encode("utf-8")), mimetype="text/plain")
         service.files().update(fileId=block["file_id"], media_body=media).execute()
         block_content_store[block["file_id"]] = new_content
-        logging.info(f"Updated file: {block['file_id']}")
+        logging.info(f"Updated file: {block['file_path']}")
     return new_content
 
 def body(service):
@@ -158,7 +158,9 @@ def body(service):
                         st.rerun()
                         break
             elif move_to_chapter and target_chapter and target_chapter != current_chapter:
+                logging.info(f"content in question: {new_content}")
                 block_to_move = st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx)
+                logging.info(f"moving file: {block_to_move['file_path']} with content {new_content}")
                 block_to_move["order"] = len(st.session_state.project["manifest"]["chapters"][target_chapter])
                 block_to_move = update_block_filepath(block_to_move, target_chapter)
                 if "file_id" in block_to_move:
@@ -166,6 +168,7 @@ def body(service):
                     service.files().update(fileId=block_to_move["file_id"], media_body=media, body={"name": block_to_move["file_path"]}).execute()
                     block_content_store[block_to_move["file_id"]] = new_content
                 st.session_state.project["manifest"]["chapters"][target_chapter].append(block_to_move)
+                logging.info(f"Moved file: {block_to_move['file_path']} with content {new_content}")
                 save_project_manifest(service)
                 clear_block_cache()
                 st.rerun()
