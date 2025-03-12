@@ -9,11 +9,9 @@ from io import BytesIO
 
 logging.basicConfig(level=logging.INFO)
 
-# Cache-like storage outside session_state for block content
 block_content_store = {}
 
 def download_file_wrapper(file_id, service):
-    """Fetch content from Drive or local store."""
     global block_content_store
     if file_id not in block_content_store:
         try:
@@ -42,7 +40,6 @@ def generate_unique_block_id(chapter_blocks):
 
 @st.fragment
 def render_block(idx, block, service, current_chapter):
-    """Fragment to render a single block’s text area and update it."""
     global block_content_store
     block_content = download_file_wrapper(block["file_id"], service) if "file_id" in block else ""
     
@@ -55,7 +52,7 @@ def render_block(idx, block, service, current_chapter):
             pass
         st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx)
         save_project_manifest(service)
-        return None  # Signal removal
+        return None
 
     unique_key = f"textblock_{block['id']}_{block.get('file_id', idx)}"
     new_content = st.text_area(f"Block {idx + 1} ({current_chapter})", value=block_content, key=unique_key)
@@ -70,7 +67,6 @@ def render_block(idx, block, service, current_chapter):
 def body(service):
     st.write("#### == DB Organizer ==")
 
-    # Initialize session state
     if "project" not in st.session_state:
         st.session_state.project = {
             "folder_id": None,
@@ -81,16 +77,14 @@ def body(service):
     current_chapter = st.session_state.project["current_chapter"]
     blocks = sorted(st.session_state.project["manifest"]["chapters"][current_chapter], key=lambda x: x["order"])
 
-    # Render blocks as fragments
     for idx, block in enumerate(blocks):
         new_content = render_block(idx, block, service, current_chapter)
-        if new_content is None:  # Block was removed (404)
+        if new_content is None:
             st.rerun()
-            return
+            break
 
-        # Form for block actions
         with st.form(key=f"actions_{block['id']}_{idx}", clear_on_submit=True):
-            col1, col2, col3, col4, col5 = st.columns(5)
+            col1, col2, col3, col4, col5, col6 = st.columns([1, 1, 1, 1, 2, 1])  # Added col6 for move button
             with col1:
                 move_up = st.form_submit_button(f"⬆ {idx}", disabled=idx == 0)
             with col2:
@@ -102,20 +96,21 @@ def body(service):
             with col5:
                 chapters = list(st.session_state.project["manifest"]["chapters"].keys())
                 target_chapter = st.selectbox(f"Move {idx}", [""] + chapters, key=f"move_select_{block['id']}", label_visibility="collapsed")
+            with col6:
+                move_to_chapter = st.form_submit_button("Move")
 
-            # Process form submission
             if move_up:
                 blocks[idx]["order"], blocks[idx - 1]["order"] = blocks[idx - 1]["order"], blocks[idx]["order"]
                 st.session_state.project["manifest"]["chapters"][current_chapter] = blocks
                 save_project_manifest(service)
                 st.rerun()
-                return
+                break
             elif move_down:
                 blocks[idx]["order"], blocks[idx + 1]["order"] = blocks[idx + 1]["order"], blocks[idx]["order"]
                 st.session_state.project["manifest"]["chapters"][current_chapter] = blocks
                 save_project_manifest(service)
                 st.rerun()
-                return
+                break
             elif delete:
                 if "file_id" in block and block["file_id"] in block_content_store:
                     del block_content_store[block["file_id"]]
@@ -124,23 +119,23 @@ def body(service):
                 st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx)
                 save_project_manifest(service)
                 st.rerun()
-                return
+                break
             elif merge:
                 try:
                     next_block = blocks[idx + 1]
                     next_content = download_file_wrapper(next_block["file_id"], service) if "file_id" in next_block else ""
                     if next_content == "HTTP 404":
+                        logging.info(f"Removing missing block: {next_block['file_id']}")
                         st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx + 1)
                         save_project_manifest(service)
                         st.rerun()
-                        return
-                    else:
+                        break
+                    elif "file_id" in block:
                         merged_content = new_content + "\n" + next_content
-                        if "file_id" in block:
-                            media = MediaIoBaseUpload(BytesIO(merged_content.encode("utf-8")), mimetype="text/plain")
-                            service.files().update(fileId=block["file_id"], media_body=media).execute()
-                            block_content_store[block["file_id"]] = merged_content
-                            logging.info(f"Updated file: {block['file_id']}")
+                        media = MediaIoBaseUpload(BytesIO(merged_content.encode("utf-8")), mimetype="text/plain")
+                        service.files().update(fileId=block["file_id"], media_body=media).execute()
+                        block_content_store[block["file_id"]] = merged_content
+                        logging.info(f"Merged into file: {block['file_id']}")
                         if "file_id" in next_block:
                             if next_block["file_id"] in block_content_store:
                                 del block_content_store[next_block["file_id"]]
@@ -149,14 +144,18 @@ def body(service):
                         st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx + 1)
                         save_project_manifest(service)
                         st.rerun()
-                        return
+                        break
+                    else:
+                        logging.error(f"Cannot merge: No file_id for block {block['id']}")
+                        break
                 except HttpError as e:
                     logging.error(f"Error during merge: {e}")
                     if e.resp.status == 404 and "file_id" in next_block:
                         st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx + 1)
                         save_project_manifest(service)
                         st.rerun()
-            elif target_chapter and target_chapter != current_chapter:
+                        break
+            elif move_to_chapter and target_chapter and target_chapter != current_chapter:
                 block_to_move = st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx)
                 block_to_move["order"] = len(st.session_state.project["manifest"]["chapters"][target_chapter])
                 block_to_move = update_block_filepath(block_to_move, target_chapter)
@@ -167,11 +166,11 @@ def body(service):
                 st.session_state.project["manifest"]["chapters"][target_chapter].append(block_to_move)
                 save_project_manifest(service)
                 st.rerun()
-                return
+                break
 
     if st.button("Add Empty Block"):
         block_id = generate_unique_block_id(st.session_state.project["manifest"]["chapters"][current_chapter])
-        block_file_name = f"{block_id}.txt"
+        block_file_name = f"{current_chapter}_{block_id}.txt"
         new_file = upload_file(service, "", block_file_name, st.session_state.project["folder_id"])
         st.session_state.project["manifest"]["chapters"][current_chapter].append({
             "id": block_id,
@@ -182,4 +181,3 @@ def body(service):
         block_content_store[new_file["id"]] = ""
         save_project_manifest(service)
         st.rerun()
-        return
