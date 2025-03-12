@@ -46,7 +46,8 @@ def clear_block_content_store():
 def decrement_orders_after(blocks, start_idx):
     """Decrement the 'order' value for all blocks after start_idx."""
     for i in range(start_idx, len(blocks)):
-        blocks[i]["order"] -= 1
+        if blocks[i]["order"] > 0:
+            blocks[i]["order"] -= 1
 
 def remove_block_from_manifest(this_chapter, this_chapter_blocks, idx):
     manifest_blocks = st.session_state.project["manifest"]["chapters"][this_chapter]
