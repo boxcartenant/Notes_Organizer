@@ -174,18 +174,18 @@ def body(service):
                     st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx)
 
                     #move the file on google drive
-                    logging.info(f"moving file: {blocks[this_block_id]['file_path']} with content {new_content}")
-                    blocks[this_block_id]["order"] = len(st.session_state.project["manifest"]["chapters"][target_chapter])
-                    blocks[this_block_id] = update_block_filepath(blocks[this_block_id], target_chapter)
+                    logging.info(f"moving file: {block['file_path']} with content {new_content}")
+                    block["order"] = len(st.session_state.project["manifest"]["chapters"][target_chapter])
+                    block = update_block_filepath(block, target_chapter)
                     media = MediaIoBaseUpload(BytesIO(new_content.encode("utf-8")), mimetype="text/plain")
-                    service.files().update(fileId=this_block_id, media_body=media, body={"name": block_to_move["file_path"]}).execute()
+                    service.files().update(fileId=this_block_id, media_body=media, body={"name": block["file_path"]}).execute()
 
                     #update the block content store
                     #block_content_store[this_block_id] = this_block_contents
 
                     #add the block back into the manifest
-                    st.session_state.project["manifest"]["chapters"][target_chapter].append(blocks[this_block_id])
-                    logging.info(f"Moved file: {blocks[this_block_id]['file_path']} with content {new_content}")
+                    st.session_state.project["manifest"]["chapters"][target_chapter].append(block)
+                    logging.info(f"Moved file: {block['file_path']} with content {new_content}")
                     logging.info(f"block contents local (this, next): ({this_block_contents},{next_block_contents})")
                     logging.info(f"block contents from store: ({block_content_store[this_block_id]},{block_content_store[next_block_id]})")
 
