@@ -48,6 +48,13 @@ def decrement_orders_after(blocks, start_idx):
     for i in range(start_idx, len(blocks)):
         blocks[i]["order"] -= 1
 
+def remove_block_from_manifest(this_chapter, this_chapter_blocks, idx):
+    manifest_blocks = st.session_state.project["manifest"]["chapters"][this_chapter]
+    block_to_remove = next(b for b in manifest_blocks if b["order"] == this_chapter_blocks["order"])
+    manifest_blocks.remove(block_to_remove)
+    decrement_orders_after(this_chapter_blocks, idx)
+    st.session_state.project["manifest"]["chapters"][this_chapter] = this_chapter_blocks
+
 @st.fragment
 def render_block(idx, block, service, current_chapter):
     global block_content_store
@@ -127,11 +134,7 @@ def body(service):
                     del block_content_store[block["file_id"]]
                 if "file_id" in block:
                     service.files().delete(fileId=block["file_id"]).execute()
-                st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx)
-                block_to_remove = next(b for b in manifest_blocks if b["order"] == block["order"])
-                manifest_blocks.remove(block_to_remove)
-                decrement_orders_after(blocks, idx)
-                st.session_state.project["manifest"]["chapters"][current_chapter] = blocks
+                remove_block_from_manifest(current_chapter, blocks, idx)
                 save_project_manifest(service)
                 st.rerun()
                 break
@@ -141,11 +144,7 @@ def body(service):
                     next_content = download_file_wrapper(next_block["file_id"], service) if "file_id" in next_block else ""
                     if next_content == "HTTP 404":
                         logging.info(f"Removing missing block: {next_block['file_id']}")
-                        manifest_blocks = st.session_state.project["manifest"]["chapters"][current_chapter]
-                        block_to_remove = next(b for b in manifest_blocks if b["order"] == next_block["order"])
-                        manifest_blocks.remove(block_to_remove)
-                        decrement_orders_after(blocks, idx + 1)
-                        st.session_state.project["manifest"]["chapters"][current_chapter] = blocks
+                        remove_block_from_manifest(current_chapter, blocks, idx)
                         save_project_manifest(service)
                         st.rerun()
                         break
@@ -160,11 +159,7 @@ def body(service):
                                 del block_content_store[next_block["file_id"]]
                             service.files().delete(fileId=next_block["file_id"]).execute()
                             logging.info(f"Deleted file: {next_block['file_path']}")
-                        manifest_blocks = st.session_state.project["manifest"]["chapters"][current_chapter]
-                        block_to_remove = next(b for b in manifest_blocks if b["order"] == next_block["order"])
-                        manifest_blocks.remove(block_to_remove)
-                        decrement_orders_after(blocks, idx + 1)
-                        st.session_state.project["manifest"]["chapters"][current_chapter] = blocks
+                        remove_block_from_manifest(current_chapter, blocks, idx)
                         save_project_manifest(service)
                         st.rerun()
                         break
@@ -174,11 +169,7 @@ def body(service):
                 except HttpError as e:
                     logging.error(f"Error during merge: {e}")
                     if e.resp.status == 404 and "file_id" in next_block:
-                        manifest_blocks = st.session_state.project["manifest"]["chapters"][current_chapter]
-                        block_to_remove = next(b for b in manifest_blocks if b["order"] == next_block["order"])
-                        manifest_blocks.remove(block_to_remove)
-                        decrement_orders_after(blocks, idx + 1)
-                        st.session_state.project["manifest"]["chapters"][current_chapter] = blocks
+                        remove_block_from_manifest(current_chapter, blocks, idx)
                         save_project_manifest(service)
                         st.rerun()
                         break
@@ -211,17 +202,13 @@ def body(service):
                     st.session_state.project["manifest"]["chapters"][target_chapter].append(block)
                     #remove the block from the old chapter manifest
                     # Find and remove by order, not idx
-                    manifest_blocks = st.session_state.project["manifest"]["chapters"][current_chapter]
-                    block_to_move = next(b for b in manifest_blocks if b["order"] == this_block_order)
-                    manifest_blocks.remove(block_to_move)
+                    remove_block_from_manifest(current_chapter, blocks, idx)
 
                     logging.info(f"Moved file: {block['file_path']} with content {new_content}")
                     logging.info(f"block contents local (this, next): ({this_block_contents},{next_block_contents})")
                     logging.info(f"block contents from store: ({block_content_store[this_block_id]},{block_content_store[next_block_id]})")
 
                     #update block orders and save the manifest
-                    decrement_orders_after(blocks, idx)
-                    st.session_state.project["manifest"]["chapters"][current_chapter] = blocks
                     save_project_manifest(service)
                     st.rerun()
                     break
