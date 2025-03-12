@@ -39,6 +39,10 @@ def generate_unique_block_id(chapter_blocks):
             return new_id
         i += 1
 
+def clear_block_content_store():
+    global block_content_store
+    block_content_store = {}
+
 @st.fragment
 def render_block(idx, block, service, current_chapter):
     global block_content_store
@@ -158,27 +162,37 @@ def body(service):
                         st.rerun()
                         break
             elif move_to_chapter and target_chapter and target_chapter != current_chapter:
-                this_block_id = block["file_id"]
-                next_block_id = blocks[idx+1]["file_id"]
-                this_block_contents = block_content_store[this_block_id]
-                next_block_contents = block_content_store[next_block_id]
-                logging.info(f"block contents (this, next): ({this_block_contents},{next_block_contents})")
-                block_to_move = st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx)
-                logging.info(f"moving file: {block_to_move['file_path']} with content {new_content}")
-                block_to_move["order"] = len(st.session_state.project["manifest"]["chapters"][target_chapter])
-                block_to_move = update_block_filepath(block_to_move, target_chapter)
-                if "file_id" in block_to_move:
+                if "file_id" in block:
+                    #capture this and the next block
+                    this_block_id = block["file_id"]
+                    next_block_id = blocks[idx+1]["file_id"]
+                    this_block_contents = block_content_store[this_block_id]
+                    next_block_contents = block_content_store[next_block_id]
+                    logging.info(f"block contents (this, next): ({this_block_contents},{next_block_contents})")
+
+                    #remove the block from the manifest
+                    st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx)
+
+                    #move the file on google drive
+                    logging.info(f"moving file: {blocks[this_block_id]['file_path']} with content {new_content}")
+                    blocks[this_block_id]["order"] = len(st.session_state.project["manifest"]["chapters"][target_chapter])
+                    blocks[this_block_id] = update_block_filepath(blocks[this_block_id], target_chapter)
                     media = MediaIoBaseUpload(BytesIO(new_content.encode("utf-8")), mimetype="text/plain")
-                    service.files().update(fileId=block_to_move["file_id"], media_body=media, body={"name": block_to_move["file_path"]}).execute()
-                    block_content_store[block_to_move["file_id"]] = new_content
-                st.session_state.project["manifest"]["chapters"][target_chapter].append(block_to_move)
-                logging.info(f"Moved file: {block_to_move['file_path']} with content {new_content}")
-                logging.info(f"block contents local (this, next): ({this_block_contents},{next_block_contents})")
-                logging.info(f"block contents from store: ({block_content_store[this_block_id]},{block_content_store[next_block_id]})")
-                save_project_manifest(service)
-                clear_block_cache()
-                st.rerun()
-                break
+                    service.files().update(fileId=this_block_id], media_body=media, body={"name": block_to_move["file_path"]}).execute()
+
+                    #update the block content store
+                    block_content_store[this_block_id] = new_content
+
+                    #add the block back into the manifest
+                    st.session_state.project["manifest"]["chapters"][target_chapter].append(blocks[this_block_id])
+                    logging.info(f"Moved file: {blocks[this_block_id]['file_path']} with content {new_content}")
+                    logging.info(f"block contents local (this, next): ({this_block_contents},{next_block_contents})")
+                    logging.info(f"block contents from store: ({block_content_store[this_block_id]},{block_content_store[next_block_id]})")
+
+                    #save the manifest
+                    save_project_manifest(service)
+                    st.rerun()
+                    break
     if st.session_state.project["folder_id"]:
         if st.button("Add Empty Block"):
             block_id = generate_unique_block_id(st.session_state.project["manifest"]["chapters"][current_chapter])
