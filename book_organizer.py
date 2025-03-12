@@ -66,6 +66,7 @@ def render_block(idx, block, service, current_chapter):
     return new_content
 
 def body(service):
+    current_chapter = st.session_state.project["current_chapter"]
     st.write(f"#### == DB {current_chapter} ==")
 
     if "project" not in st.session_state:
@@ -75,7 +76,7 @@ def body(service):
             "current_chapter": "Staging Area"
         }
 
-    current_chapter = st.session_state.project["current_chapter"]
+    
     blocks = sorted(st.session_state.project["manifest"]["chapters"][current_chapter], key=lambda x: x["order"])
 
     for idx, block in enumerate(blocks):
