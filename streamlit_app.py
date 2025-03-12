@@ -21,9 +21,10 @@ def main():
             browse_google_drive(service) # a call to manage_google_files.py
             book_organizer.body(service) # a call to book_organizer.py
     else:
-        st.write("This app fetches text files from google drive, and lets you organize their contents.")
-        st.write("It creates a project folder in which to organize notes.")
-        st.write("Log into google drive using the link on the sidebar (left) to begin.")
+        st.write("This project is a tool for organizing notes into chapters...like if you're writing a book.")
+        st.write("It creates a folder on your google drive for your project. To get started:")
+        st.write("- Log into your google drive account using the button on the expander (left).")
+        
             
 if __name__ == "__main__":
     main()
