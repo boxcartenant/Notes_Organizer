@@ -158,7 +158,11 @@ def body(service):
                         st.rerun()
                         break
             elif move_to_chapter and target_chapter and target_chapter != current_chapter:
-                logging.info(f"content in question: {new_content}")
+                this_block_id = block["file_id"]
+                next_block_id = blocks[idx+1]["file_id"]
+                this_block_contents = block_content_store[this_block_id]
+                next_block_contents = block_content_store[next_block_id]
+                logging.info(f"block contents (this, next): ({this_block_contents},{next_block_contents})")
                 block_to_move = st.session_state.project["manifest"]["chapters"][current_chapter].pop(idx)
                 logging.info(f"moving file: {block_to_move['file_path']} with content {new_content}")
                 block_to_move["order"] = len(st.session_state.project["manifest"]["chapters"][target_chapter])
@@ -169,6 +173,8 @@ def body(service):
                     block_content_store[block_to_move["file_id"]] = new_content
                 st.session_state.project["manifest"]["chapters"][target_chapter].append(block_to_move)
                 logging.info(f"Moved file: {block_to_move['file_path']} with content {new_content}")
+                logging.info(f"block contents local (this, next): ({this_block_contents},{next_block_contents})")
+                logging.info(f"block contents from store: ({block_content_store[this_block_id]},{block_content_store[next_block_id]})")
                 save_project_manifest(service)
                 clear_block_cache()
                 st.rerun()
