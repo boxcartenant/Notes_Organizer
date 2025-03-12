@@ -1,5 +1,5 @@
 import streamlit as st
-from Google_Drive_Management.manage_google_files import browse_google_drive, download_file, upload_file, build, list_drive_files, save_project_manifest
+from Google_Drive_Management.manage_google_files import browse_google_drive, download_file, upload_file, build, list_drive_files, save_project_manifest, clear_block_cache
 from google.oauth2.credentials import Credentials
 from googleapiclient.http import MediaIoBaseUpload
 from googleapiclient.errors import HttpError
@@ -167,6 +167,7 @@ def body(service):
                     block_content_store[block_to_move["file_id"]] = new_content
                 st.session_state.project["manifest"]["chapters"][target_chapter].append(block_to_move)
                 save_project_manifest(service)
+                clear_block_cache()
                 st.rerun()
                 break
     if st.session_state.project["folder_id"]:
