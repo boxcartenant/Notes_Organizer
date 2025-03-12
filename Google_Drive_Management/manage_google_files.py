@@ -145,9 +145,9 @@ def browse_google_drive(service):
                     st.session_state.project["current_chapter"] = new_target_chapter
                     st.rerun()
                 with st.form(key = "New_Chapter_Name", clear_on_submit = True, enter_to_submit = True):
-                    new_chapter = st.text_input("New Chapter Name")
-                    submitted = st.form_submit_button("Add Chapter")
-                    if submitted and new_chapter and new_chapter not in chapters:
+                    new_chapter = st.text_input("New Chapter Name", key = "new_chapter")
+                    submitted = st.form_submit_button("Add Chapter", disabled = not (new_chapter and new_chapter not in chapters))
+                    if submitted:
                         st.session_state.project["manifest"]["chapters"][new_chapter] = []
                         st.success("Chapter Added!")
                         st.rerun()
