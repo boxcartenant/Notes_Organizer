@@ -151,7 +151,7 @@ def body(service):
                         st.rerun()
                         break
                     elif "file_id" in block:
-                        merged_content = new_content + "\n" + next_content
+                        merged_content = new_content + "\n\n" + next_content
                         media = MediaIoBaseUpload(BytesIO(merged_content.encode("utf-8")), mimetype="text/plain")
                         service.files().update(fileId=block["file_id"], media_body=media).execute()
                         block_content_store[block["file_id"]] = merged_content
