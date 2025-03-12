@@ -67,7 +67,7 @@ def render_block(idx, block, service, current_chapter):
 
 def body(service):
     current_chapter = st.session_state.project["current_chapter"]
-    st.write(f"#### == DB {current_chapter} ==")
+    st.write(f"#### == {current_chapter} ==")
 
     if "project" not in st.session_state:
         st.session_state.project = {
@@ -169,17 +169,25 @@ def body(service):
                 save_project_manifest(service)
                 st.rerun()
                 break
-
-    if st.button("Add Empty Block"):
-        block_id = generate_unique_block_id(st.session_state.project["manifest"]["chapters"][current_chapter])
-        block_file_name = f"{current_chapter}_{block_id}.txt"
-        new_file = upload_file(service, "", block_file_name, st.session_state.project["folder_id"])
-        st.session_state.project["manifest"]["chapters"][current_chapter].append({
-            "id": block_id,
-            "file_path": new_file["name"],
-            "file_id": new_file["id"],
-            "order": len(st.session_state.project["manifest"]["chapters"][current_chapter])
-        })
-        block_content_store[new_file["id"]] = ""
-        save_project_manifest(service)
-        st.rerun()
+    if st.session_state.project["folder_id"]:
+        if st.button("Add Empty Block"):
+            block_id = generate_unique_block_id(st.session_state.project["manifest"]["chapters"][current_chapter])
+            block_file_name = f"{current_chapter}_{block_id}.txt"
+            new_file = upload_file(service, "", block_file_name, st.session_state.project["folder_id"])
+            st.session_state.project["manifest"]["chapters"][current_chapter].append({
+                "id": block_id,
+                "file_path": new_file["name"],
+                "file_id": new_file["id"],
+                "order": len(st.session_state.project["manifest"]["chapters"][current_chapter])
+            })
+            block_content_store[new_file["id"]] = ""
+            save_project_manifest(service)
+            st.rerun()
+    else:
+        st.write("This project is a tool for organizing notes into chapters...like if you're writing a book.")
+        st.write("To get started:")
+        st.write("- Log into your google drive account using the button on the expander (left).")
+        st.write("- Create a new folder for your project by using the 'Create New Folder' dialog.")
+        st.write("- After you've created a folder for this tool, set that folder as the project directory using the 'set' button in 'Folders and Files'.")
+        st.write("- Now you can create and rearrange text blocks using the buttons in the main body, or by opening .txt files from your google drive in 'Folders and files'.")
+        st.write("- To make a new chapter, or change what chapter you're looking at, use 'Manage Chapters'.")
