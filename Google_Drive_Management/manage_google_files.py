@@ -126,35 +126,36 @@ def browse_google_drive(service):
                                         st.session_state.project["manifest"]["chapters"] = {"Staging Area": []}
                                     st.session_state.project["current_chapter"] = list(st.session_state.project["manifest"]["chapters"].keys())[0]
                                 st.rerun()
-                elif file['name'].endswith('.txt'):
-                    if st.button(f"📄 {file['name']}", key=f"file_{file['id']}"):
-                        if not st.session_state.project["folder_id"]:
-                            st.error("Please set a project folder first!")
-                        else:
-                            current_chapter = st.session_state.project["current_chapter"]
-                            content = download_file(file["id"], service)
-                            block_id = generate_unique_block_id(st.session_state.project["manifest"]["chapters"][current_chapter])
-                            block_file_name = f"{current_chapter}_{block_id}.txt"
-                            new_file = upload_file(service, content, block_file_name, st.session_state.project["folder_id"])
-                            st.session_state.project["manifest"]["chapters"][current_chapter].append({
-                                "id": block_id,
-                                "file_path": new_file["name"],
-                                "file_id": new_file["id"],
-                                "order": len(st.session_state.project["manifest"]["chapters"][current_chapter])
-                            })
-                            block_content_store[new_file["id"]] = content
-                            logging.info(f"Imported file {new_file['name']} with content: {content}")
-                            save_project_manifest(service)
-                            #block_id = f"block_{len(st.session_state.project['manifest']['chapters'][st.session_state.project['current_chapter']])}"
-                            #block_file_name = f"{block_id}.txt"
-                            #upload_file(service, content, block_file_name, st.session_state.project["folder_id"])
-                            #st.session_state.project["manifest"]["chapters"][st.session_state.project["current_chapter"]].append({
-                            #    "id": block_id,
-                            #    "file_path": block_file_name,
-                            #    "order": len(st.session_state.project["manifest"]["chapters"][st.session_state.project["current_chapter"]])
-                            #})
-                            #st.success(f"Added {file['name']} to {st.session_state.project['current_chapter']}")
-                            #st.rerun()
+                else:
+                    if file['name'].endswith('.txt.')
+                        if st.button(f"📄 {file['name']}", key=f"file_{file['id']}"):
+                            if not st.session_state.project["folder_id"]:
+                                st.error("Please set a project folder first!")
+                            else:
+                                current_chapter = st.session_state.project["current_chapter"]
+                                content = download_file(file["id"], service)
+
+                                block_id = generate_unique_block_id(st.session_state.project["manifest"]["chapters"][current_chapter])
+                                block_file_name = f"{current_chapter}_{block_id}.txt"
+                                new_file = upload_file(service, content, block_file_name, st.session_state.project["folder_id"])
+                                st.session_state.project["manifest"]["chapters"][current_chapter].append({
+                                    "id": block_id,
+                                    "file_path": new_file["name"],
+                                    "file_id": new_file["id"],
+                                    "order": len(st.session_state.project["manifest"]["chapters"][current_chapter])
+                                })
+                                block_content_store[new_file["id"]] = content
+                                save_project_manifest(service)
+                                #block_id = f"block_{len(st.session_state.project['manifest']['chapters'][st.session_state.project['current_chapter']])}"
+                                #block_file_name = f"{block_id}.txt"
+                                #upload_file(service, content, block_file_name, st.session_state.project["folder_id"])
+                                #st.session_state.project["manifest"]["chapters"][st.session_state.project["current_chapter"]].append({
+                                #    "id": block_id,
+                                #    "file_path": block_file_name,
+                                #    "order": len(st.session_state.project["manifest"]["chapters"][st.session_state.project["current_chapter"]])
+                                #})
+                                #st.success(f"Added {file['name']} to {st.session_state.project['current_chapter']}")
+                                #st.rerun()
 
         if st.session_state.project["folder_id"] and st.button("Save Project"):
             save_project_manifest(service)
