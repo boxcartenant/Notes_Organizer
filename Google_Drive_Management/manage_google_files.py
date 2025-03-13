@@ -177,8 +177,8 @@ def browse_google_drive(service):
                         st.session_state.project["manifest"]["chapters"][new_chapter] = []
                         st.success("Chapter Added!")
                         st.rerun()
-    if st.button("Report a Bug"):
-        st.write("Fix it yourself! Fork the source: https://github.com/boxcartenant/Notes_Organizer")
+        if st.button("Report a Bug"):
+            st.write("Fix it yourself! Fork the source: https://github.com/boxcartenant/Notes_Organizer")
 
 def create_auth_flow():
     """Create an OAuth flow using Streamlit secrets."""
