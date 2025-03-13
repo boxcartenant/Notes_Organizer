@@ -87,9 +87,7 @@ def browse_google_drive(service):
 
     with st.sidebar:
         st.write("### Google Drive Browser")
-        if st.session_state.folder_stack and st.button("⬆ Go Up", key="go_up"):
-            st.session_state.folder_stack.pop()
-            st.rerun()
+        
 
         project_folder_name = "Not set" if not st.session_state.project["folder_id"] else st.session_state.project["folder_name"]
         st.write(f"**Current Project Folder**: {project_folder_name}")
@@ -104,6 +102,9 @@ def browse_google_drive(service):
                     st.rerun()
 
         with st.expander("Folders and Files", expanded=True):
+            if st.session_state.folder_stack and st.button("⬆ Go Up", key="go_up"):
+                st.session_state.folder_stack.pop()
+                st.rerun()
             for file in files:
                 if file["mimeType"] == "application/vnd.google-apps.folder":
                     col1, col2 = st.columns([3, 1])
