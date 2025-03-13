@@ -145,6 +145,7 @@ def browse_google_drive(service):
                             })
                             block_content_store[new_file["id"]] = content
                             save_project_manifest(service)
+                            st.rerun()
                             #block_id = f"block_{len(st.session_state.project['manifest']['chapters'][st.session_state.project['current_chapter']])}"
                             #block_file_name = f"{block_id}.txt"
                             #upload_file(service, content, block_file_name, st.session_state.project["folder_id"])
