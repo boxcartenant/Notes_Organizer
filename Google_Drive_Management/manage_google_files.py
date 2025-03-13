@@ -4,7 +4,7 @@ from google.oauth2.credentials import Credentials
 import streamlit as st
 from io import BytesIO
 from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload, MediaFileUpload
-import json, time, logging
+import json, time
 
 block_content_store = {}
 
@@ -87,6 +87,9 @@ def browse_google_drive(service):
 
     with st.sidebar:
         st.write("### Google Drive Browser")
+        if st.session_state.folder_stack and st.button("⬆ Go Up", key="go_up"):
+            st.session_state.folder_stack.pop()
+            st.rerun()
 
         project_folder_name = "Not set" if not st.session_state.project["folder_id"] else st.session_state.project["folder_name"]
         st.write(f"**Current Project Folder**: {project_folder_name}")
@@ -101,9 +104,6 @@ def browse_google_drive(service):
                     st.rerun()
 
         with st.expander("Folders and Files", expanded=True):
-            if st.session_state.folder_stack and st.button("⬆ Go Up", key="go_up"):
-                st.session_state.folder_stack.pop()
-            st.rerun()
             for file in files:
                 if file["mimeType"] == "application/vnd.google-apps.folder":
                     col1, col2 = st.columns([3, 1])
@@ -133,7 +133,6 @@ def browse_google_drive(service):
                         else:
                             current_chapter = st.session_state.project["current_chapter"]
                             content = download_file(file["id"], service)
-
                             block_id = generate_unique_block_id(st.session_state.project["manifest"]["chapters"][current_chapter])
                             block_file_name = f"{current_chapter}_{block_id}.txt"
                             new_file = upload_file(service, content, block_file_name, st.session_state.project["folder_id"])
@@ -143,7 +142,7 @@ def browse_google_drive(service):
                                 "file_id": new_file["id"],
                                 "order": len(st.session_state.project["manifest"]["chapters"][current_chapter])
                             })
-                            block_content_store[new_file["id"]] = content
+                            block_content_store[new_file["id"]] = ""
                             save_project_manifest(service)
                             st.rerun()
                             #block_id = f"block_{len(st.session_state.project['manifest']['chapters'][st.session_state.project['current_chapter']])}"
