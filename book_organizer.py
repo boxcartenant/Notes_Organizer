@@ -1,5 +1,5 @@
 import streamlit as st
-from Google_Drive_Management.manage_google_files import browse_google_drive, download_file, upload_file, build, list_drive_files, save_project_manifest, clear_block_cache
+from Google_Drive_Management.manage_google_files import browse_google_drive, download_file, upload_file, build, list_drive_files, save_project_manifest, clear_block_cache, generate_unique_block_id, block_content_store
 from google.oauth2.credentials import Credentials
 from googleapiclient.http import MediaIoBaseUpload
 from googleapiclient.errors import HttpError
@@ -10,7 +10,7 @@ from io import BytesIO
 logging.getLogger('googleapiclient.discovery_cache').setLevel(logging.ERROR)
 logging.basicConfig(level=logging.INFO)
 
-block_content_store = {}
+
 
 def download_file_wrapper(file_id, service):
     global block_content_store
@@ -30,14 +30,7 @@ def update_block_filepath(block, chapter):
     block["file_path"] = f"{chapter}_{block['id']}.txt"
     return block
 
-def generate_unique_block_id(chapter_blocks):
-    existing_ids = {block["id"] for block in chapter_blocks}
-    i = len(chapter_blocks)
-    while True:
-        new_id = f"block_{i}_{int(time.time())}"
-        if new_id not in existing_ids:
-            return new_id
-        i += 1
+
 
 def clear_block_content_store():
     global block_content_store
