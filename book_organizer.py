@@ -116,13 +116,13 @@ def body(service):
                 blocks[idx]["order"], blocks[idx - 1]["order"] = blocks[idx - 1]["order"], blocks[idx]["order"]
                 st.session_state.project["manifest"]["chapters"][current_chapter] = blocks
                 save_project_manifest(service)
-                #st.rerun()
+                st.rerun()
                 break
             elif move_down:
                 blocks[idx]["order"], blocks[idx + 1]["order"] = blocks[idx + 1]["order"], blocks[idx]["order"]
                 st.session_state.project["manifest"]["chapters"][current_chapter] = blocks
                 save_project_manifest(service)
-                #st.rerun()
+                st.rerun()
                 break
             elif delete:
                 if "file_id" in block and block["file_id"] in block_content_store:
@@ -131,7 +131,7 @@ def body(service):
                     service.files().delete(fileId=block["file_id"]).execute()
                 remove_block_from_manifest(current_chapter, blocks, idx)
                 save_project_manifest(service)
-                #st.rerun()
+                st.rerun()
                 break
             elif merge:
                 try:
@@ -141,7 +141,7 @@ def body(service):
                         logging.info(f"Removing missing block: {next_block['file_id']}")
                         remove_block_from_manifest(current_chapter, blocks, idx+1)
                         save_project_manifest(service)
-                        #st.rerun()
+                        st.rerun()
                         break
                     elif "file_id" in block:
                         merged_content = new_content + "\n\n" + next_content
@@ -156,7 +156,7 @@ def body(service):
                             logging.info(f"Deleted file: {next_block['file_path']}")
                         remove_block_from_manifest(current_chapter, blocks, idx+1)
                         save_project_manifest(service)
-                        #st.rerun()
+                        st.rerun()
                         break
                     else:
                         logging.error(f"Cannot merge: No file_id for block {block['id']}")
@@ -166,7 +166,7 @@ def body(service):
                     if e.resp.status == 404 and "file_id" in next_block:
                         remove_block_from_manifest(current_chapter, blocks, idx+1)
                         save_project_manifest(service)
-                        #st.rerun()
+                        st.rerun()
                         break
             elif move_to_chapter and target_chapter and target_chapter != current_chapter:
                 if "file_id" in block:
@@ -200,7 +200,7 @@ def body(service):
 
                     #update block orders and save the manifest
                     save_project_manifest(service)
-                    #st.rerun()
+                    st.rerun()
                     break
     if st.session_state.project["folder_id"]:
         if st.button("Add Empty Block"):
@@ -215,7 +215,7 @@ def body(service):
             })
             block_content_store[new_file["id"]] = ""
             save_project_manifest(service)
-            #st.rerun()
+            st.rerun()
     else:
         st.success("You're logged in!")
         st.write("But you haven't selected your project folder yet. If this is your first time here:\n- Create a new folder for your project by using the 'Create New Folder' dialog.")
