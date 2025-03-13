@@ -127,7 +127,7 @@ def browse_google_drive(service):
                                         st.session_state.project["manifest"]["chapters"] = {"Staging Area": []}
                                     st.session_state.project["current_chapter"] = list(st.session_state.project["manifest"]["chapters"].keys())[0]
                                 st.rerun()
-                else:
+                elif file['name'].endswith('.txt'):
                     if st.button(f"📄 {file['name']}", key=f"file_{file['id']}"):
                         if not st.session_state.project["folder_id"]:
                             st.error("Please set a project folder first!")
