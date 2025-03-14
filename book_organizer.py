@@ -222,4 +222,5 @@ def body(service):
         st.write("If you've already got a project folder made for this tool:\n- Set that folder as the project directory using the 'set' button in 'Folders and Files'.")
         st.write("Now you can create and rearrange text blocks using the buttons in the main body, or by opening .txt files from your google drive in 'Folders and files'.")
         st.write("To make a new chapter, or change what chapter you're looking at, use 'Manage Chapters'.")
-        st.write("Don't worry: this program will only edit files which are in the project directory. If you add a file from somewhere else in your google drive, it will first copy that file to the project.")
+        st.write("Any files you open with this program will be copied to the project directory before editing them.")
+        st.write("DISCLAIMER: I make no promises about the usefulness of this tool. It might have bugs. It might delete your data. It might cause you other kinds of problems. Who knows? Use at your own risk.")
