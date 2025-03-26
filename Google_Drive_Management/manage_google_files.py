@@ -28,6 +28,63 @@ def save_project_manifest(service):
         upload_file(service, manifest_content, "manifest.json", st.session_state.project["folder_id"])
     st.rerun()
 
+import datetime
+
+def dump_project_to_files(service):
+    """Dump all chapters into text files in an output folder within the project directory."""
+    # Step 1: Save the project manifest
+    save_project_manifest(service)
+
+    # Get project folder ID
+    project_folder_id = st.session_state.project["folder_id"]
+    if not project_folder_id:
+        st.error("No project folder set!")
+        return
+
+    # Step 2: Handle existing output folder
+    files = list_drive_files(service, project_folder_id)
+    output_folder = next((f for f in files if f["name"] == "output" and f["mimeType"] == "application/vnd.google-apps.folder"), None)
+    if output_folder:
+        # Rename to "archive [datetime]"
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+        new_name = f"archive_{timestamp}"
+        service.files().update(
+            fileId=output_folder["id"],
+            body={"name": new_name}
+        ).execute()
+        logging.info(f"Renamed existing output folder to {new_name}")
+
+    # Step 3: Create new output folder
+    output_folder_id = create_folder(service, "output", project_folder_id)
+    logging.info(f"Created new output folder with ID: {output_folder_id}")
+
+    # Step 4: Process each chapter
+    chapters = st.session_state.project["manifest"]["chapters"]
+    for chapter_name, blocks in chapters.items():
+        # Sort blocks by order
+        sorted_blocks = sorted(blocks, key=lambda x: x["order"])
+        # Combine block contents
+        combined_content = ""
+        for block in sorted_blocks:
+            if "file_id" in block:
+                content = download_file(block["file_id"], service)
+                if content == "HTTP 404":
+                    logging.warning(f"Block {block['id']} not found, skipping")
+                    continue
+                combined_content += content + "\n"
+            else:
+                logging.warning(f"Block {block['id']} has no file_id, skipping")
+        
+        # Remove trailing newline
+        combined_content = combined_content.rstrip("\n")
+        
+        # Upload combined content as a text file
+        file_name = f"{chapter_name}.txt"
+        upload_file(service, combined_content, file_name, output_folder_id)
+        logging.info(f"Created {file_name} in output folder")
+
+    st.success("Project dumped to output files!")
+
 def list_drive_files(service, folder_id=None):
     """List files and folders in Google Drive."""
     query = "'root' in parents" if not folder_id else f"'{folder_id}' in parents"
@@ -157,8 +214,14 @@ def browse_google_drive(service):
                             #st.success(f"Added {file['name']} to {st.session_state.project['current_chapter']}")
                             #st.rerun()
 
-        if st.session_state.project["folder_id"] and st.button("Save Project"):
-            save_project_manifest(service)
+        if st.session_state.project["folder_id"]:
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("Save Project"):
+                    save_project_manifest(service)
+            with col2:
+                if st.button("Dump to Output Files"):
+                    dump_project_to_files(service)
             
 
         if st.session_state.project["folder_id"]:
