@@ -32,6 +32,7 @@ def save_project_manifest(service):
 
 def dump_project_to_files(service):
     """Dump all chapters into text files in an output folder within the project directory."""
+    logging.info(f"Gonna dump!")
     # Step 1: Save the project manifest
     save_project_manifest(service)
 
