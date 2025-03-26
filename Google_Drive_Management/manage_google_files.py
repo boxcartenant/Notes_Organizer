@@ -5,6 +5,7 @@ import streamlit as st
 from io import BytesIO
 from googleapiclient.http import MediaIoBaseDownload, MediaIoBaseUpload, MediaFileUpload
 import json, time
+import datetime
 
 block_content_store = {}
 
@@ -27,8 +28,6 @@ def save_project_manifest(service):
     else:
         upload_file(service, manifest_content, "manifest.json", st.session_state.project["folder_id"])
     st.rerun()
-
-import datetime
 
 def dump_project_to_files(service):
     """Dump all chapters into text files in an output folder within the project directory."""
