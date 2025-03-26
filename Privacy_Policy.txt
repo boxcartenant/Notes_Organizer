@@ -1,0 +1,1 @@
+This app does not store your data anywhere outside your google drive. It just makes a folder on your own google drive and copies stuff from one part of your drive to another part of your drive. I don't want your data.
