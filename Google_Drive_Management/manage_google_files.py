@@ -21,20 +21,21 @@ def generate_unique_block_id(chapter_blocks):
             return new_id
         i += 1
 
-def save_project_manifest(service):
+def save_project_manifest(service, rerun = True):
     manifest_content = json.dumps(st.session_state.project["manifest"])
     manifest_file = next((f for f in list_drive_files(service, st.session_state.project["folder_id"]) if f["name"] == "manifest.json"), None)
     if manifest_file:
         service.files().update(fileId=manifest_file["id"], media_body=MediaIoBaseUpload(BytesIO(manifest_content.encode("utf-8")), mimetype="application/json")).execute()
     else:
         upload_file(service, manifest_content, "manifest.json", st.session_state.project["folder_id"])
-    st.rerun()
+    if rerun:
+        st.rerun()
 
 def dump_project_to_files(service):
     """Dump all chapters into text files in an output folder within the project directory."""
     logging.info(f"Gonna dump!")
     # Step 1: Save the project manifest
-    save_project_manifest(service)
+    save_project_manifest(service, False)
     logging.info(f"Still going!")
 
     # Get project folder ID
