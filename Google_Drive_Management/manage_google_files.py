@@ -33,10 +33,10 @@ def save_project_manifest(service, rerun = True):
 
 def dump_project_to_files(service):
     """Dump all chapters into text files in an output folder within the project directory."""
-    logging.info(f"Gonna dump!")
+    logging.info(f"Time to make the output!")
     # Step 1: Save the project manifest
     save_project_manifest(service, False)
-    logging.info(f"Still going!")
+    #logging.info(f"Still going!")
 
     # Get project folder ID
     project_folder_id = st.session_state.project["folder_id"]
