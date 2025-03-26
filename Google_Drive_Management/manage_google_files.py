@@ -35,6 +35,7 @@ def dump_project_to_files(service):
     logging.info(f"Gonna dump!")
     # Step 1: Save the project manifest
     save_project_manifest(service)
+    logging.info(f"Still going!")
 
     # Get project folder ID
     project_folder_id = st.session_state.project["folder_id"]
