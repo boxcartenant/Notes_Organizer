@@ -70,7 +70,7 @@ def dump_project_to_files(service):
                 if content == "HTTP 404":
                     logging.warning(f"Block {block['id']} not found, skipping")
                     continue
-                combined_content += content + "\n"
+                combined_content += content + "\n\n"
             else:
                 logging.warning(f"Block {block['id']} has no file_id, skipping")
         
