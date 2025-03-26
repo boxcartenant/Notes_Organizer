@@ -74,6 +74,8 @@ def render_block(idx, block, service, current_chapter):
         service.files().update(fileId=block["file_id"], media_body=media).execute()
         block_content_store[block["file_id"]] = new_content
         logging.info(f"Updated file: {block['file_path']}")
+        st.rerun()
+        return None
     return new_content
 
 def body(service):
