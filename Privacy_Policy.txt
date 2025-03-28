@@ -1,6 +1,6 @@
-This app does not store your data anywhere outside your google drive. 
-It just makes a folder on your own google drive and copies stuff from one part of your drive to another part of your drive. 
-I don't want your data.
+The privacy policy has been moved tooooooooo:
 
-It's a streamlit app, though, so maybe look at Streamlit's privacy policy. I don't know what they do with the temporary data
-that the app uses (i.e. the st.session_state contents). Here's a link to that: https://streamlit.io/privacy-policy?ref=streamlit
+Here:
+https://boxcarprojectspace.wordpress.com/2025/03/28/boxcar-notes-privacy-policy/
+
+Because I needed it to be on my own domain (I sure hope wordpress domains count as mine).
