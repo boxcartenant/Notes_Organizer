@@ -10,6 +10,9 @@ from Google_Drive_Management.manage_google_files import *
 def main():
     logged_in = False
 
+    myLogoUrl = "https://boxcarprojectspace.wordpress.com/wp-content/uploads/2025/03/wing-pen-1.jpg"
+    st.logo(link = myLogoUrl)
+
     # Sidebar: Mode buttons
     with st.sidebar:
         logged_in = authenticate_user()
