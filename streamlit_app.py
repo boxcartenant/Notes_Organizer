@@ -11,7 +11,7 @@ def main():
     logged_in = False
 
     myLogoUrl = "https://boxcarprojectspace.wordpress.com/wp-content/uploads/2025/03/wing-pen-1.jpg"
-    st.logo(link = myLogoUrl)
+    st.logo(image = myLogoUrl, link = myLogoUrl)
 
     # Sidebar: Mode buttons
     with st.sidebar:
