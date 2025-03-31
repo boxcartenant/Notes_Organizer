@@ -220,9 +220,13 @@ def body(service):
             #st.rerun()
     else:
         st.success("You're logged in!")
-        st.write("But you haven't selected your project folder yet. If this is your first time here:\n- Create a new folder for your project by using the 'Create New Folder' dialog.")
-        st.write("If you've already got a project folder made for this tool:\n- Set that folder as the project directory using the 'set' button in 'Folders and Files'.")
-        st.write("Now you can create and rearrange text blocks using the buttons in the main body, or by opening .txt files from your google drive in 'Folders and files'.")
-        st.write("To make a new chapter, or change what chapter you're looking at, use 'Manage Chapters'.")
-        st.write("Any files you open with this program will be copied to the project directory before editing them.")
-        st.write("DISCLAIMER: I make no promises about the usefulness of this tool. It might have bugs. It might delete your data. It might cause you other kinds of problems. Who knows? Use at your own risk.")
+        st.write("\
+But you haven't selected your project folder yet. If this is your first time here, follow these steps to get started:\n\
+1. Create a new project or select an existing project that you made before.\n\
+2. Upload any .txt files that you might want to use in the project\n\
+3. Start making blocks and chapters. Use the file-browser to select any files you want to bring into a block in the current chapter.\n\
+\n\
+Now you can create and rearrange text blocks using the buttons in the main body, or by opening .txt files from your google drive in 'Folders and files'.\n\
+To make a new chapter, or change what chapter you're looking at, use 'Manage Chapters'.\n\
+\n\
+DISCLAIMER: I make no promises about the usefulness of this tool. It might have bugs. It might delete your data. It might cause you other kinds of problems. Who knows? Use at your own risk.")

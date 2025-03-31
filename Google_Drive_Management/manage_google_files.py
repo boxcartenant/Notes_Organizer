@@ -132,70 +132,120 @@ def clear_block_cache():
 
 def browse_google_drive(service):
     global block_content_store
-    """Google Drive browser with folder selection and creation."""
+    """Google Drive browser with project selection, file uploads, and toggle between project-specific and shared files."""
+    # Initialize session state
     if "folder_stack" not in st.session_state:
         st.session_state.folder_stack = []
     if "project" not in st.session_state:
         st.session_state.project = {
             "folder_id": None,
+            "folder_name": None,
             "manifest": {"chapters": {"Staging Area": []}},
             "current_chapter": "Staging Area"
         }
-
-    current_folder = st.session_state.folder_stack[-1] if st.session_state.folder_stack else None
-    files = list_drive_files(service, current_folder)
+    if "uploads_folder_id" not in st.session_state:
+        st.session_state.uploads_folder_id = None  # For project-specific uploads
+    if "shared_uploads_folder_id" not in st.session_state:
+        st.session_state.shared_uploads_folder_id = None  # For shared "Book Editor Uploads"
 
     with st.sidebar:
         st.write("### Google Drive Browser")
-        
 
-        project_folder_name = "Not set" if not st.session_state.project["folder_id"] else st.session_state.project["folder_name"]
-        st.write(f"**Current Project Folder**: {project_folder_name}")
+        # Step 1: Project Picker (shown if no project is selected)
+        if not st.session_state.project["folder_id"]:
+            # List top-level project folders (excluding "Book Editor Uploads")
+            project_folders = list_drive_files(service, None)
+            project_folders = [
+                f for f in project_folders
+                if f["mimeType"] == "application/vnd.google-apps.folder"
+                and f["name"].startswith("BoxcarProj.")
+                and f["name"] != "Book Editor Uploads"
+            ]
+            project_names = [f["name"] for f in project_folders]
+            project_names.append("Create New Project")
 
-        with st.expander("Create New Folder", expanded=False):
-            with st.form(key="Create_New_Folder", clear_on_submit = True, enter_to_submit = True, border = False):
-                new_folder_name = st.text_input("Folder Name", key="new_folder_name")
-                submitted = st.form_submit_button("Create")
-                if submitted and new_folder_name:
-                    new_folder_id = create_folder(service, new_folder_name, current_folder)
-                    st.success(f"Created folder: {new_folder_name}")
+            selected_project = st.selectbox("Select a Project", project_names)
+            if selected_project == "Create New Project":
+                with st.form(key="Create_New_Project", clear_on_submit=True, enter_to_submit=True, border=False):
+                    new_project_name = st.text_input("New Project Name", key="new_project_name")
+                    submitted = st.form_submit_button("Create")
+                    if submitted and new_project_name:
+                        # Create the project folder
+                        project_folder = create_folder(service, f"BoxcarProj.{new_project_name}", None)
+                        # Create an "uploads" subdirectory
+                        create_folder(service, "uploads", project_folder["id"])
+                        # Check for "Book Editor Uploads" in root and create if not exists
+                        root_files = list_drive_files(service, None)
+                        shared_uploads_folder = next((f for f in root_files if f["name"] == "Book Editor Uploads"), None)
+                        if not shared_uploads_folder:
+                            shared_uploads_folder = create_folder(service, "Book Editor Uploads", None)
+                        st.session_state.shared_uploads_folder_id = shared_uploads_folder["id"]
+                        # Set project state
+                        st.session_state.project["folder_id"] = project_folder["id"]
+                        st.session_state.project["folder_name"] = f"BoxcarProj.{new_project_name}"
+                        st.session_state.project["manifest"] = {"chapters": {"Staging Area": []}}
+                        # Upload initial manifest
+                        upload_file(service, json.dumps(st.session_state.project["manifest"]), "manifest.json", project_folder["id"])
+                        st.rerun()
+            else:
+                # User selected an existing project
+                if selected_project:
+                    selected_folder = next(f for f in project_folders if f["name"] == selected_project)
+                    st.session_state.project["folder_id"] = selected_folder["id"]
+                    st.session_state.project["folder_name"] = selected_folder["name"]
+                    # Load manifest
+                    manifest_file = next((f for f in list_drive_files(service, selected_folder["id"]) if f["name"] == "manifest.json"), None)
+                    if not manifest_file:
+                        upload_file(service, json.dumps({"chapters": {"Staging Area": []}}), "manifest.json", selected_folder["id"])
+                    else:
+                        manifest_content = download_file(manifest_file["id"], service)
+                        st.session_state.project["manifest"] = json.loads(manifest_content)
+                        if "chapters" not in st.session_state.project["manifest"]:
+                            st.session_state.project["manifest"]["chapters"] = {"Staging Area": []}
+                        st.session_state.project["current_chapter"] = list(st.session_state.project["manifest"]["chapters"].keys())[0]
+                    # Set uploads folder IDs
+                    uploads_folder = next((f for f in list_drive_files(service, selected_folder["id"]) if f["name"] == "uploads"), None)
+                    st.session_state.uploads_folder_id = uploads_folder["id"]
+                    root_files = list_drive_files(service, None)
+                    shared_uploads_folder = next((f for f in root_files if f["name"] == "Book Editor Uploads"), None)
+                    if not shared_uploads_folder:
+                        shared_uploads_folder = create_folder(service, "Book Editor Uploads", None)
+                    st.session_state.shared_uploads_folder_id = shared_uploads_folder["id"]
                     st.rerun()
 
-        with st.expander("Folders and Files", expanded=True):
-            if st.session_state.folder_stack and st.button("⬆ Go Up", key="go_up"):
-                st.session_state.folder_stack.pop()
-                st.rerun()
-            for file in files:
-                if file["mimeType"] == "application/vnd.google-apps.folder":
-                    col1, col2 = st.columns([3, 1])
-                    with col1:
-                        if st.button(f"📁 {file['name']}", key=f"folder_{file['id']}"):
-                            st.session_state.folder_stack.append(file["id"])
-                            st.rerun()
-                    if not st.session_state.project["folder_id"]: #you can only set the project once, because i don't want to have to clear my session state.
-                        with col2:
-                            if st.button("Set", key=f"set_{file['id']}"):
-                                st.session_state.project["folder_id"] = file["id"]
-                                st.session_state.project["folder_name"] = file["name"]
-                                manifest_file = next((f for f in list_drive_files(service, file["id"]) if f["name"] == "manifest.json"), None)
-                                if not manifest_file:
-                                    upload_file(service, json.dumps({"chapters": {"Staging Area": []}}), "manifest.json", file["id"])
-                                else:
-                                    manifest_content = download_file(manifest_file["id"], service)
-                                    st.session_state.project["manifest"] = json.loads(manifest_content)
-                                    if "chapters" not in st.session_state.project["manifest"]:
-                                        st.session_state.project["manifest"]["chapters"] = {"Staging Area": []}
-                                    st.session_state.project["current_chapter"] = list(st.session_state.project["manifest"]["chapters"].keys())[0]
-                                st.rerun()
-                elif file['name'].endswith('.txt'):
-                    if st.button(f"📄 {file['name']}", key=f"file_{file['id']}"):
-                        if not st.session_state.project["folder_id"]:
-                            st.error("Please set a project folder first!")
-                        else:
+        # Step 2: File Browser (shown after a project is selected)
+        else:
+            # Display current project folder
+            project_folder_name = st.session_state.project["folder_name"]
+            st.write(f"**Current Project Folder**: {project_folder_name}")
+
+            if "show_shared_uploads" not in st.session_state:
+                st.session_state.show_shared_uploads = False
+            # Toggle to switch between project-specific and shared uploads
+            st.session_state.show_shared_uploads = st.toggle("Show files for all projects", value=st.session_state.show_shared_uploads) #st.checkbox("Show files for all projects", value=False)
+            current_uploads_folder_id = st.session_state.shared_uploads_folder_id if st.session_state.show_shared_uploads else st.session_state.uploads_folder_id
+            current_uploads_folder_name = "Book Editor Uploads" if st.session_state.show_shared_uploads else "uploads"
+
+            # File uploader to the current folder (either project-specific "uploads" or shared "Book Editor Uploads")
+            uploaded_files = st.file_uploader(f"Upload .txt files to '{current_uploads_folder_name}'", type="txt", accept_multiple_files=True)
+            if uploaded_files:
+                for uploaded_file in uploaded_files:
+                    content = uploaded_file.read().decode("utf-8")
+                    file_name = uploaded_file.name
+                    upload_file(service, content, file_name, current_uploads_folder_id)
+                    st.success(f"Uploaded {file_name} to {current_uploads_folder_name}!")
+
+            # List files in the current uploads folder
+            with st.expander("Files", expanded=True):
+                files = list_drive_files(service, current_uploads_folder_id)
+                for file in files:
+                    if file["name"].endswith(".txt"):
+                        if st.button(f"📄 {file['name']}", key=f"file_{file['id']}"):
                             current_chapter = st.session_state.project["current_chapter"]
                             content = download_file(file["id"], service)
                             block_id = generate_unique_block_id(st.session_state.project["manifest"]["chapters"][current_chapter])
                             block_file_name = f"{current_chapter}_{block_id}.txt"
+                            # Copy the file into the project folder's root (alongside manifest.json)
                             new_file = upload_file(service, content, block_file_name, st.session_state.project["folder_id"])
                             st.session_state.project["manifest"]["chapters"][current_chapter].append({
                                 "id": block_id,
@@ -205,19 +255,8 @@ def browse_google_drive(service):
                             })
                             block_content_store[new_file["id"]] = content
                             save_project_manifest(service)
-                            #st.rerun()
-                            #block_id = f"block_{len(st.session_state.project['manifest']['chapters'][st.session_state.project['current_chapter']])}"
-                            #block_file_name = f"{block_id}.txt"
-                            #upload_file(service, content, block_file_name, st.session_state.project["folder_id"])
-                            #st.session_state.project["manifest"]["chapters"][st.session_state.project["current_chapter"]].append({
-                            #    "id": block_id,
-                            #    "file_path": block_file_name,
-                            #    "order": len(st.session_state.project["manifest"]["chapters"][st.session_state.project["current_chapter"]])
-                            #})
-                            #st.success(f"Added {file['name']} to {st.session_state.project['current_chapter']}")
-                            #st.rerun()
 
-        if st.session_state.project["folder_id"]:
+            # Save and Dump buttons
             col1, col2 = st.columns(2)
             with col1:
                 if st.button("Save Project"):
@@ -225,9 +264,8 @@ def browse_google_drive(service):
             with col2:
                 if st.button("Dump to Output Files"):
                     dump_project_to_files(service)
-            
 
-        if st.session_state.project["folder_id"]:
+            # Chapter management
             st.write("### Chapters")
             with st.expander("Manage Chapters", expanded=True):
                 chapters = list(st.session_state.project["manifest"]["chapters"].keys())
@@ -236,8 +274,8 @@ def browse_google_drive(service):
                     clear_block_cache()  # Clear cache when switching chapters
                     st.session_state.project["current_chapter"] = new_target_chapter
                     st.rerun()
-                with st.form(key = "New_Chapter_Name", clear_on_submit = True, enter_to_submit = True):
-                    new_chapter = st.text_input("New Chapter Name", key = "new_chapter")
+                with st.form(key="New_Chapter_Name", clear_on_submit=True, enter_to_submit=True):
+                    new_chapter = st.text_input("New Chapter Name", key="new_chapter")
                     submitted = st.form_submit_button("Add Chapter")
                     if submitted and new_chapter and new_chapter not in chapters:
                         st.session_state.project["manifest"]["chapters"][new_chapter] = []
