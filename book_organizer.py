@@ -27,7 +27,7 @@ def download_file_wrapper(file_id, service):
     return block_content_store[file_id]
 
 def update_block_filepath(block, chapter):
-    block["file_path"] = f"{chapter}_{block['id']}.txt"
+    block["file_path"] = f"{block['id']}.txt"
     return block
 
 
@@ -184,7 +184,7 @@ def body(service):
                     logging.info(f"moving file: {block['file_path']} with content {new_content}")
                     block["order"] = len(st.session_state.project["manifest"]["chapters"][target_chapter])
                     
-                    block = update_block_filepath(block, target_chapter)
+                    #block = update_block_filepath(block, target_chapter)
                     media = MediaIoBaseUpload(BytesIO(new_content.encode("utf-8")), mimetype="text/plain")
 
                     #update the block content store
@@ -207,7 +207,7 @@ def body(service):
     if st.session_state.project["folder_id"]:
         if st.button("Add Empty Block"):
             block_id = generate_unique_block_id(st.session_state.project["manifest"]["chapters"][current_chapter])
-            block_file_name = f"{current_chapter}_{block_id}.txt"
+            block_file_name = f"{block_id}.txt"
             new_file = upload_file(service, "", block_file_name, st.session_state.project["folder_id"])
             st.session_state.project["manifest"]["chapters"][current_chapter].append({
                 "id": block_id,
