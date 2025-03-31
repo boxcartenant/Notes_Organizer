@@ -10,7 +10,7 @@ import logging
 
 block_content_store = {}
 
-SCOPES = ['https://www.googleapis.com/auth/drive']
+SCOPES = ['https://www.googleapis.com/auth/drive.file']
 
 def generate_unique_block_id(chapter_blocks):
     existing_ids = {block["id"] for block in chapter_blocks}
