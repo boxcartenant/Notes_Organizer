@@ -266,7 +266,7 @@ def browse_google_drive(service):
                         upload_file(service, content, file_name, current_uploads_folder_id)
                         st.success(f"Uploaded {file_name} to {current_uploads_folder_name}!")
                     # Clear the uploader's state
-                    st.session_state["file_uploader"] = []
+                    #st.session_state["file_uploader"] = []
                     st.rerun()
 
             # List files in the current uploads folder
