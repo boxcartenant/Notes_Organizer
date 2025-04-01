@@ -244,7 +244,7 @@ def browse_google_drive(service):
             # Toggle to switch between project-specific and shared uploads
             if "show_shared_uploads" not in st.session_state:
                 st.session_state.show_shared_uploads = False
-            show_shared_uploads = st.toggle("Show files for all projects", value=st.session_state.show_shared_uploads) #st.checkbox("Show files for all projects", value=False)
+            show_shared_uploads = st.toggle("Show files shared by all projects", value=st.session_state.show_shared_uploads) #st.checkbox("Show files for all projects", value=False)
             if show_shared_uploads != st.session_state.show_shared_uploads:
                 st.session_state.show_shared_uploads = show_shared_uploads
                 st.rerun()
