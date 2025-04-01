@@ -239,7 +239,13 @@ def browse_google_drive(service):
             # Display current project folder
             project_folder_name = st.session_state.project["folder_name"]
             HeaderName = project_folder_name.replace("BoxcarProj.","")
-            st.write(f"**Current Project Folder**: {HeaderName}")
+            st.write(f"**Current Project**: {HeaderName}")
+
+            # Toggle to switch between project-specific and shared uploads
+            st.session_state.show_shared_uploads = st.toggle("Show files for all projects", value=st.session_state.show_shared_uploads) #st.checkbox("Show files for all projects", value=False)
+            current_uploads_folder_id = st.session_state.shared_uploads_folder_id if st.session_state.show_shared_uploads else st.session_state.uploads_folder_id
+            current_uploads_folder_name = "Boxcar Notes Uploads" if st.session_state.show_shared_uploads else "uploads"
+            logging.info(f"selected folder: {current_uploads_folder_name} : {current_uploads_folder_id}")
 
             # List files in the current uploads folder
             with st.expander("Files", expanded=True):
@@ -290,11 +296,7 @@ def browse_google_drive(service):
             if "show_shared_uploads" not in st.session_state:
                 st.session_state.show_shared_uploads = False
 
-            # Toggle to switch between project-specific and shared uploads
-            st.session_state.show_shared_uploads = st.toggle("Show files for all projects", value=st.session_state.show_shared_uploads) #st.checkbox("Show files for all projects", value=False)
-            current_uploads_folder_id = st.session_state.shared_uploads_folder_id if st.session_state.show_shared_uploads else st.session_state.uploads_folder_id
-            current_uploads_folder_name = "Boxcar Notes Uploads" if st.session_state.show_shared_uploads else "uploads"
-            logging.info(f"selected folder: {current_uploads_folder_name} : {current_uploads_folder_id}")
+            
 
             # File uploader to the current folder (either project-specific "uploads" or shared "Boxcar Notes Uploads")
             with st.form(key="file_upload_form", clear_on_submit=True):
