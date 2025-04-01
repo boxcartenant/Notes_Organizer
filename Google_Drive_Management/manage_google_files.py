@@ -104,7 +104,7 @@ def download_file(file_id, service):
     while not done:
         status, done = downloader.next_chunk()
     file_stream.seek(0)
-    return file_stream.getvalue().decode("utf-8")
+    return file_stream.getvalue().decode("utf-8", errors="replace")
 
 def upload_file(service, file_content, file_name, folder_id=None):
     """Upload a file to Google Drive and return the file object."""
@@ -179,7 +179,7 @@ def browse_google_drive(service):
                     key="new_project_name",
                     disabled=selected_project != "Create New Project"
                 )
-                submit_button = st.form_submit_button("Select Project")
+                submit_button = st.form_submit_button("Confirm")
 
                 if submit_button and selected_project:
                     if selected_project == "Create New Project":
@@ -314,7 +314,7 @@ def browse_google_drive(service):
                     submit_button = st.form_submit_button("Upload Files")
                     if submit_button and uploaded_files:
                         for uploaded_file in uploaded_files:
-                            content = uploaded_file.read().decode("utf-8")
+                            content = uploaded_file.read().decode("utf-8", errors="replace")
                             file_name = uploaded_file.name
                             logging.info(f"Uploading: {file_name}")
                             upload_file(service, content, file_name, current_uploads_folder_id)
