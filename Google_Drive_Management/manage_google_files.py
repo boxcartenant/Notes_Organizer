@@ -218,8 +218,8 @@ def browse_google_drive(service):
         else:
             # Display current project folder
             project_folder_name = st.session_state.project["folder_name"]
-            LoggerName = project_folder_name.replace("BoxcarProj.","")
-            st.write(f"**Current Project Folder**: {LoggerName}")
+            HeaderName = project_folder_name.replace("BoxcarProj.","")
+            st.write(f"**Current Project Folder**: {HeaderName}")
 
             if "show_shared_uploads" not in st.session_state:
                 st.session_state.show_shared_uploads = False
