@@ -251,7 +251,7 @@ def browse_google_drive(service):
                 return
             current_uploads_folder_id = st.session_state.shared_uploads_folder_id if st.session_state.show_shared_uploads else st.session_state.uploads_folder_id
             current_uploads_folder_name = "Boxcar Notes Uploads" if st.session_state.show_shared_uploads else "uploads"
-            logging.info(f"selected folder: {current_uploads_folder_name} : {current_uploads_folder_id}")
+            #logging.info(f"selected folder: {current_uploads_folder_name} : {current_uploads_folder_id}")
 
             # List files in the current uploads folder
             with st.expander("Files", expanded=True):
@@ -275,8 +275,8 @@ def browse_google_drive(service):
                             save_project_manifest(service)
 
             # Chapter management
-            st.write("### Chapters")
-            with st.expander("Manage Chapters", expanded=True):
+            #st.write("### Chapters")
+            with st.expander("Chapters", expanded=True):
                 chapters = list(st.session_state.project["manifest"]["chapters"].keys())
                 new_target_chapter = st.selectbox("Current Chapter", chapters, index=chapters.index(st.session_state.project["current_chapter"]))
                 if new_target_chapter and new_target_chapter != st.session_state.project["current_chapter"]:
@@ -302,27 +302,26 @@ def browse_google_drive(service):
             if "show_shared_uploads" not in st.session_state:
                 st.session_state.show_shared_uploads = False
 
-            
-
-            # File uploader to the current folder (either project-specific "uploads" or shared "Boxcar Notes Uploads")
-            with st.form(key="file_upload_form", clear_on_submit=True):
-                uploaded_files = st.file_uploader(
-                    f"Upload .txt files to '{current_uploads_folder_name}'",
-                    type="txt",
-                    accept_multiple_files=True,
-                    key="file_uploader"
-                )
-                submit_button = st.form_submit_button("Upload Files")
-                if submit_button and uploaded_files:
-                    for uploaded_file in uploaded_files:
-                        content = uploaded_file.read().decode("utf-8")
-                        file_name = uploaded_file.name
-                        logging.info(f"Uploading: {file_name}")
-                        upload_file(service, content, file_name, current_uploads_folder_id)
-                        st.success(f"Uploaded {file_name} to {current_uploads_folder_name}!")
-                    # Clear the uploader's state
-                    #st.session_state["file_uploader"] = []
-                    st.rerun()
+            with st.expander("Upload Files", expanded=True):
+                # File uploader to the current folder (either project-specific "uploads" or shared "Boxcar Notes Uploads")
+                with st.form(key="file_upload_form", clear_on_submit=True):
+                    uploaded_files = st.file_uploader(
+                        f"Upload .txt files to '{current_uploads_folder_name}'",
+                        type="txt",
+                        accept_multiple_files=True,
+                        key="file_uploader"
+                    )
+                    submit_button = st.form_submit_button("Upload Files")
+                    if submit_button and uploaded_files:
+                        for uploaded_file in uploaded_files:
+                            content = uploaded_file.read().decode("utf-8")
+                            file_name = uploaded_file.name
+                            logging.info(f"Uploading: {file_name}")
+                            upload_file(service, content, file_name, current_uploads_folder_id)
+                            st.success(f"Uploaded {file_name} to {current_uploads_folder_name}!")
+                        # Clear the uploader's state
+                        #st.session_state["file_uploader"] = []
+                        st.rerun()
 
 
         with st.expander("Report a Bug", expanded = False):

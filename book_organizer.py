@@ -226,7 +226,8 @@ But you haven't selected your project folder yet. If this is your first time her
 2. Upload any .txt files that you might want to use in the project\n\
 3. Start making blocks and chapters. Use the file-browser to select any files you want to bring into a block in the current chapter.\n\
 \n\
-Now you can create and rearrange text blocks using the buttons in the main body, or by opening .txt files from your google drive in 'Folders and files'.\n\
+Then you can create and rearrange text blocks using the buttons in the main body, or by opening .txt files from your google drive in 'Folders and files'.\n\
+Keep in mind: this app can only access files that you upload or create using this app.\n\n\
 To make a new chapter, or change what chapter you're looking at, use 'Manage Chapters'.\n\
 \n\
 DISCLAIMER: I make no promises about the usefulness of this tool. It might have bugs. It might delete your data. It might cause you other kinds of problems. Who knows? Use at your own risk.")
