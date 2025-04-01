@@ -146,20 +146,20 @@ def browse_google_drive(service):
     if "uploads_folder_id" not in st.session_state:
         st.session_state.uploads_folder_id = None  # For project-specific uploads
     if "shared_uploads_folder_id" not in st.session_state:
-        st.session_state.shared_uploads_folder_id = None  # For shared "Book Editor Uploads"
+        st.session_state.shared_uploads_folder_id = None  # For shared "Boxcar Notes Uploads"
 
     with st.sidebar:
         st.write("### Google Drive Browser")
 
         # Step 1: Project Picker (shown if no project is selected)
         if not st.session_state.project["folder_id"]:
-            # List top-level project folders (excluding "Book Editor Uploads")
+            # List top-level project folders (excluding "Boxcar Notes Uploads")
             project_folders = list_drive_files(service, None)
             project_folders = [
                 f for f in project_folders
                 if f["mimeType"] == "application/vnd.google-apps.folder"
                 and f["name"].startswith("BoxcarProj.")
-                and f["name"] != "Book Editor Uploads"
+                and f["name"] != "Boxcar Notes Uploads"
             ]
             project_names = [f["name"] for f in project_folders]
             project_names.append("Create New Project")
@@ -173,12 +173,13 @@ def browse_google_drive(service):
                         # Create the project folder
                         project_folder = create_folder(service, f"BoxcarProj.{new_project_name}", None)
                         # Create an "uploads" subdirectory
-                        create_folder(service, "uploads", project_folder)
-                        # Check for "Book Editor Uploads" in root and create if not exists
+                        st.session_state.uploads_folder_id = create_folder(service, "uploads", project_folder)
+                        
+                        # Check for "Boxcar Notes Uploads" in root and create if not exists
                         root_files = list_drive_files(service, None)
-                        shared_uploads_folder = next((f for f in root_files if f["name"] == "Book Editor Uploads"), None)
+                        shared_uploads_folder = next((f for f in root_files if f["name"] == "Boxcar Notes Uploads"), None)
                         if not shared_uploads_folder:
-                            shared_uploads_folder = create_folder(service, "Book Editor Uploads", None)
+                            shared_uploads_folder = create_folder(service, "Boxcar Notes Uploads", None)
                         st.session_state.shared_uploads_folder_id = shared_uploads_folder
                         # Set project state
                         st.session_state.project["folder_id"] = project_folder
@@ -207,9 +208,9 @@ def browse_google_drive(service):
                     uploads_folder = next((f for f in list_drive_files(service, selected_folder["id"]) if f["name"] == "uploads"), None)
                     st.session_state.uploads_folder_id = uploads_folder["id"]
                     root_files = list_drive_files(service, None)
-                    shared_uploads_folder = next((f for f in root_files if f["name"] == "Book Editor Uploads"), None)
+                    shared_uploads_folder = next((f for f in root_files if f["name"] == "Boxcar Notes Uploads"), None)
                     if not shared_uploads_folder:
-                        shared_uploads_folder = create_folder(service, "Book Editor Uploads", None)
+                        shared_uploads_folder = create_folder(service, "Boxcar Notes Uploads", None)
                     st.session_state.shared_uploads_folder_id = shared_uploads_folder
                     st.rerun()
 
@@ -217,21 +218,23 @@ def browse_google_drive(service):
         else:
             # Display current project folder
             project_folder_name = st.session_state.project["folder_name"]
-            st.write(f"**Current Project Folder**: {project_folder_name}")
+            st.write(f"**Current Project Folder**: {project_folder_name.replace("BoxcarProj.","")}")
 
             if "show_shared_uploads" not in st.session_state:
                 st.session_state.show_shared_uploads = False
             # Toggle to switch between project-specific and shared uploads
             st.session_state.show_shared_uploads = st.toggle("Show files for all projects", value=st.session_state.show_shared_uploads) #st.checkbox("Show files for all projects", value=False)
             current_uploads_folder_id = st.session_state.shared_uploads_folder_id if st.session_state.show_shared_uploads else st.session_state.uploads_folder_id
-            current_uploads_folder_name = "Book Editor Uploads" if st.session_state.show_shared_uploads else "uploads"
+            current_uploads_folder_name = "Boxcar Notes Uploads" if st.session_state.show_shared_uploads else "uploads"
+            logging.info(f"selected folder: {current_uploads_folder_name} : {current_uploads_folder_id}")
 
-            # File uploader to the current folder (either project-specific "uploads" or shared "Book Editor Uploads")
+            # File uploader to the current folder (either project-specific "uploads" or shared "Boxcar Notes Uploads")
             uploaded_files = st.file_uploader(f"Upload .txt files to '{current_uploads_folder_name}'", type="txt", accept_multiple_files=True)
             if uploaded_files:
                 for uploaded_file in uploaded_files:
                     content = uploaded_file.read().decode("utf-8")
                     file_name = uploaded_file.name
+                    logging.info(f"Uploading: {file_name}")
                     upload_file(service, content, file_name, current_uploads_folder_id)
                     st.success(f"Uploaded {file_name} to {current_uploads_folder_name}!")
 
