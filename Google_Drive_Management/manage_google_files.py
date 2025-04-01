@@ -179,7 +179,7 @@ def browse_google_drive(service):
                         shared_uploads_folder = next((f for f in root_files if f["name"] == "Book Editor Uploads"), None)
                         if not shared_uploads_folder:
                             shared_uploads_folder = create_folder(service, "Book Editor Uploads", None)
-                        st.session_state.shared_uploads_folder_id = shared_uploads_folder["id"]
+                        st.session_state.shared_uploads_folder_id = shared_uploads_folder
                         # Set project state
                         st.session_state.project["folder_id"] = project_folder
                         st.session_state.project["folder_name"] = f"BoxcarProj.{new_project_name}"
