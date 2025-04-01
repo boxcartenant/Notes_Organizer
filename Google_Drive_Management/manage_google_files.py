@@ -173,7 +173,7 @@ def browse_google_drive(service):
                         # Create the project folder
                         project_folder = create_folder(service, f"BoxcarProj.{new_project_name}", None)
                         # Create an "uploads" subdirectory
-                        create_folder(service, "uploads", project_folder["id"])
+                        create_folder(service, "uploads", project_folder)
                         # Check for "Book Editor Uploads" in root and create if not exists
                         root_files = list_drive_files(service, None)
                         shared_uploads_folder = next((f for f in root_files if f["name"] == "Book Editor Uploads"), None)
@@ -181,11 +181,11 @@ def browse_google_drive(service):
                             shared_uploads_folder = create_folder(service, "Book Editor Uploads", None)
                         st.session_state.shared_uploads_folder_id = shared_uploads_folder["id"]
                         # Set project state
-                        st.session_state.project["folder_id"] = project_folder["id"]
+                        st.session_state.project["folder_id"] = project_folder
                         st.session_state.project["folder_name"] = f"BoxcarProj.{new_project_name}"
                         st.session_state.project["manifest"] = {"chapters": {"Staging Area": []}}
                         # Upload initial manifest
-                        upload_file(service, json.dumps(st.session_state.project["manifest"]), "manifest.json", project_folder["id"])
+                        upload_file(service, json.dumps(st.session_state.project["manifest"]), "manifest.json", project_folder)
                         st.rerun()
             else:
                 # User selected an existing project
