@@ -38,9 +38,10 @@ def clear_block_content_store():
 
 def decrement_orders_after(blocks, start_idx):
     """Decrement the 'order' value for all blocks after start_idx."""
-    for i in range(start_idx, len(blocks)):
-        if blocks[i]["order"] > 0:
-            blocks[i]["order"] -= 1
+    if start_idx < len(blocks):
+        for i in range(start_idx, len(blocks)):
+            if blocks[i]["order"] > 0:
+                blocks[i]["order"] -= 1
 
 def remove_block_from_manifest(this_chapter, this_chapter_blocks, idx):
     manifest_blocks = st.session_state.project["manifest"]["chapters"][this_chapter]
@@ -172,33 +173,20 @@ def body(service):
                         break
             elif move_to_chapter and target_chapter and target_chapter != current_chapter:
                 if "file_id" in block:
-                    #capture this and the next block
-                    this_block_id = block["file_id"]
-                    next_block_id = blocks[idx+1]["file_id"]
-                    #this_block_order = block["order"]
-                    this_block_contents = block_content_store[this_block_id]
-                    next_block_contents = block_content_store[next_block_id]
-                    logging.info(f"block contents (this, next): ({this_block_contents},{next_block_contents})")
-
                     #move the file on google drive
-                    logging.info(f"moving file: {block['file_path']} with content {new_content}")
                     block["order"] = len(st.session_state.project["manifest"]["chapters"][target_chapter])
                     
+                    #are these lines necessary?
                     #block = update_block_filepath(block, target_chapter)
-                    media = MediaIoBaseUpload(BytesIO(new_content.encode("utf-8")), mimetype="text/plain")
-
-                    #update the block content store
-                    #block_content_store[this_block_id] = this_block_contents
+                    #media = MediaIoBaseUpload(BytesIO(new_content.encode("utf-8")), mimetype="text/plain")
 
                     #add the block back into the new chapter manifest
                     st.session_state.project["manifest"]["chapters"][target_chapter].append(block)
+                    
                     #remove the block from the old chapter manifest
-                    # Find and remove by order, not idx
                     remove_block_from_manifest(current_chapter, blocks, idx)
 
-                    logging.info(f"Moved file: {block['file_path']} with content {new_content}")
-                    logging.info(f"block contents local (this, next): ({this_block_contents},{next_block_contents})")
-                    logging.info(f"block contents from store: ({block_content_store[this_block_id]},{block_content_store[next_block_id]})")
+                    logging.info(f"Moved file: {block['file_path']}")
 
                     #update block orders and save the manifest
                     save_project_manifest(service)
