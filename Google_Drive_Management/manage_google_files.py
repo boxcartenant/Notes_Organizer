@@ -302,7 +302,7 @@ def browse_google_drive(service):
             if "show_shared_uploads" not in st.session_state:
                 st.session_state.show_shared_uploads = False
 
-            with st.expander("Upload Files", expanded=True):
+            with st.expander("Upload Files", expanded=False):
                 # File uploader to the current folder (either project-specific "uploads" or shared "Boxcar Notes Uploads")
                 with st.form(key="file_upload_form", clear_on_submit=True):
                     uploaded_files = st.file_uploader(
