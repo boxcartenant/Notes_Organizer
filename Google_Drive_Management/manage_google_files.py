@@ -172,11 +172,17 @@ def browse_google_drive(service):
                     index=default_index,
                     key="project_selectbox"
                 )
+                # Add text input for new project name (only shown if "Create New Project" is selected)
+                new_project_name = st.text_input(
+                    "New Project Name",
+                    value="",
+                    key="new_project_name",
+                    disabled=selected_project != "Create New Project"
+                )
                 submit_button = st.form_submit_button("Select Project")
 
                 if submit_button and selected_project:
                     if selected_project == "Create New Project":
-                        new_project_name = st.session_state.get("new_project_name", "")
                         if not new_project_name:
                             st.error("Please enter a project name!")
                         else:
@@ -188,8 +194,10 @@ def browse_google_drive(service):
                             
                             # Check for "Boxcar Notes Uploads" in root and create if not exists
                             root_files = list_drive_files(service, None)
-                            shared_uploads_folder = next((f for f in root_files if f["name"] == "Boxcar Notes Uploads"), None)["id"]
-                            if not shared_uploads_folder:
+                            shared_uploads_folder = next((f for f in root_files if f["name"] == "Boxcar Notes Uploads"), None)
+                            if shared_uploads_folder:
+                                shared_uploads_folder = shared_uploads_folder["id"]
+                            else:
                                 shared_uploads_folder = create_folder(service, "Boxcar Notes Uploads", None)
                             st.session_state.shared_uploads_folder_id = shared_uploads_folder
                             # Set project state
@@ -216,10 +224,12 @@ def browse_google_drive(service):
                             st.session_state.project["current_chapter"] = list(st.session_state.project["manifest"]["chapters"].keys())[0]
                         # Set uploads folder IDs
                         uploads_folder = next((f for f in list_drive_files(service, selected_folder["id"]) if f["name"] == "uploads"), None)
-                        st.session_state.uploads_folder_id = uploads_folder
+                        st.session_state.uploads_folder_id = uploads_folder["id"]
                         root_files = list_drive_files(service, None)
-                        shared_uploads_folder = next((f for f in root_files if f["name"] == "Boxcar Notes Uploads"), None)["id"]
-                        if not shared_uploads_folder:
+                        shared_uploads_folder = next((f for f in root_files if f["name"] == "Boxcar Notes Uploads"), None)
+                        if shared_uploads_folder:
+                            shared_uploads_folder = shared_uploads_folder["id"]
+                        else:
                             shared_uploads_folder = create_folder(service, "Boxcar Notes Uploads", None)
                         st.session_state.shared_uploads_folder_id = shared_uploads_folder
                         st.rerun()
