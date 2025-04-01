@@ -241,8 +241,55 @@ def browse_google_drive(service):
             HeaderName = project_folder_name.replace("BoxcarProj.","")
             st.write(f"**Current Project Folder**: {HeaderName}")
 
+            # List files in the current uploads folder
+            with st.expander("Files", expanded=True):
+                files = list_drive_files(service, current_uploads_folder_id)
+                for file in files:
+                    if file["name"].endswith(".txt"):
+                        if st.button(f"📄 {file['name']}", key=f"file_{file['id']}"):
+                            current_chapter = st.session_state.project["current_chapter"]
+                            content = download_file(file["id"], service)
+                            block_id = generate_unique_block_id(st.session_state.project["manifest"]["chapters"][current_chapter])
+                            block_file_name = f"{current_chapter}_{block_id}.txt"
+                            # Copy the file into the project folder's root (alongside manifest.json)
+                            new_file = upload_file(service, content, block_file_name, st.session_state.project["folder_id"])
+                            st.session_state.project["manifest"]["chapters"][current_chapter].append({
+                                "id": block_id,
+                                "file_path": new_file["name"],
+                                "file_id": new_file["id"],
+                                "order": len(st.session_state.project["manifest"]["chapters"][current_chapter])
+                            })
+                            block_content_store[new_file["id"]] = content
+                            save_project_manifest(service)
+
+            # Chapter management
+            st.write("### Chapters")
+            with st.expander("Manage Chapters", expanded=True):
+                chapters = list(st.session_state.project["manifest"]["chapters"].keys())
+                new_target_chapter = st.selectbox("Current Chapter", chapters, index=chapters.index(st.session_state.project["current_chapter"]))
+                if new_target_chapter and new_target_chapter != st.session_state.project["current_chapter"]:
+                    clear_block_cache()  # Clear cache when switching chapters
+                    st.session_state.project["current_chapter"] = new_target_chapter
+                    st.rerun()
+                with st.form(key="New_Chapter_Name", clear_on_submit=True, enter_to_submit=True):
+                    new_chapter = st.text_input("New Chapter Name", key="new_chapter")
+                    submitted = st.form_submit_button("Add Chapter")
+                    if submitted and new_chapter and new_chapter not in chapters:
+                        st.session_state.project["manifest"]["chapters"][new_chapter] = []
+                        st.success("Chapter Added!")
+                        st.rerun()
+
+            # Save and Dump buttons
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("Save Project"):
+                    save_project_manifest(service)
+            with col2:
+                if st.button("Dump to Output Files"):
+                    dump_project_to_files(service)
             if "show_shared_uploads" not in st.session_state:
                 st.session_state.show_shared_uploads = False
+
             # Toggle to switch between project-specific and shared uploads
             st.session_state.show_shared_uploads = st.toggle("Show files for all projects", value=st.session_state.show_shared_uploads) #st.checkbox("Show files for all projects", value=False)
             current_uploads_folder_id = st.session_state.shared_uploads_folder_id if st.session_state.show_shared_uploads else st.session_state.uploads_folder_id
@@ -269,52 +316,7 @@ def browse_google_drive(service):
                     #st.session_state["file_uploader"] = []
                     st.rerun()
 
-            # List files in the current uploads folder
-            with st.expander("Files", expanded=True):
-                files = list_drive_files(service, current_uploads_folder_id)
-                for file in files:
-                    if file["name"].endswith(".txt"):
-                        if st.button(f"📄 {file['name']}", key=f"file_{file['id']}"):
-                            current_chapter = st.session_state.project["current_chapter"]
-                            content = download_file(file["id"], service)
-                            block_id = generate_unique_block_id(st.session_state.project["manifest"]["chapters"][current_chapter])
-                            block_file_name = f"{current_chapter}_{block_id}.txt"
-                            # Copy the file into the project folder's root (alongside manifest.json)
-                            new_file = upload_file(service, content, block_file_name, st.session_state.project["folder_id"])
-                            st.session_state.project["manifest"]["chapters"][current_chapter].append({
-                                "id": block_id,
-                                "file_path": new_file["name"],
-                                "file_id": new_file["id"],
-                                "order": len(st.session_state.project["manifest"]["chapters"][current_chapter])
-                            })
-                            block_content_store[new_file["id"]] = content
-                            save_project_manifest(service)
 
-            # Save and Dump buttons
-            col1, col2 = st.columns(2)
-            with col1:
-                if st.button("Save Project"):
-                    save_project_manifest(service)
-            with col2:
-                if st.button("Dump to Output Files"):
-                    dump_project_to_files(service)
-
-            # Chapter management
-            st.write("### Chapters")
-            with st.expander("Manage Chapters", expanded=True):
-                chapters = list(st.session_state.project["manifest"]["chapters"].keys())
-                new_target_chapter = st.selectbox("Current Chapter", chapters, index=chapters.index(st.session_state.project["current_chapter"]))
-                if new_target_chapter and new_target_chapter != st.session_state.project["current_chapter"]:
-                    clear_block_cache()  # Clear cache when switching chapters
-                    st.session_state.project["current_chapter"] = new_target_chapter
-                    st.rerun()
-                with st.form(key="New_Chapter_Name", clear_on_submit=True, enter_to_submit=True):
-                    new_chapter = st.text_input("New Chapter Name", key="new_chapter")
-                    submitted = st.form_submit_button("Add Chapter")
-                    if submitted and new_chapter and new_chapter not in chapters:
-                        st.session_state.project["manifest"]["chapters"][new_chapter] = []
-                        st.success("Chapter Added!")
-                        st.rerun()
         with st.expander("Report a Bug", expanded = False):
             st.write("Fix it yourself! Fork the source: https://github.com/boxcartenant/Notes_Organizer")
 
