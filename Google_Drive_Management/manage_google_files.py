@@ -238,6 +238,7 @@ def browse_google_drive(service):
                     logging.info(f"Uploading: {file_name}")
                     upload_file(service, content, file_name, current_uploads_folder_id)
                     st.success(f"Uploaded {file_name} to {current_uploads_folder_name}!")
+                uploaded_files.clear()
 
             # List files in the current uploads folder
             with st.expander("Files", expanded=True):
