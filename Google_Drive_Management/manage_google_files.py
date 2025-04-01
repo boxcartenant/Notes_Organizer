@@ -247,11 +247,11 @@ def browse_google_drive(service):
             show_shared_uploads = st.toggle("Show files for all projects", value=st.session_state.show_shared_uploads) #st.checkbox("Show files for all projects", value=False)
             if show_shared_uploads != st.session_state.show_shared_uploads:
                 st.session_state.show_shared_uploads = show_shared_uploads
-                logging.info(f"selected folder: {current_uploads_folder_name} : {current_uploads_folder_id}")
                 st.rerun()
                 return
             current_uploads_folder_id = st.session_state.shared_uploads_folder_id if st.session_state.show_shared_uploads else st.session_state.uploads_folder_id
             current_uploads_folder_name = "Boxcar Notes Uploads" if st.session_state.show_shared_uploads else "uploads"
+            logging.info(f"selected folder: {current_uploads_folder_name} : {current_uploads_folder_id}")
 
             # List files in the current uploads folder
             with st.expander("Files", expanded=True):
