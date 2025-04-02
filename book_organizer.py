@@ -107,23 +107,25 @@ def body(service):
             """
             <style>
             /* Target the form containing the buttons */
-            div[data-testid="stForm"][key="actions_{block_id}_{idx}"] div[data-testid="stHorizontalBlock"] \{
+            div[data-testid="stForm"][key="actions_""" + str(block_id) + "_" + str(idx) + """"] div[data-testid="stHorizontalBlock"] {
                display: flex !important;
                 flex-direction: row !important;
                 flex-wrap: wrap !important;
                 gap: 8px !important; /* Add some spacing between buttons */
             }
             /* Ensure each column takes up only the necessary width */
-            div[data-testid="stForm"][key="actions_{block_id}_{idx}"] div[data-testid="stHorizontalBlock"] > div \{
+            div[data-testid="stForm"][key="actions_""" + str(block_id) + "_" + str(idx) + """"] div[data-testid="stHorizontalBlock"] > div {
                 flex: 0 0 auto !important;
                 min-width: 60px !important; /* Minimum width for buttons */
             }
             /* Adjust the selectbox column to take up more space if needed */
-            div[data-testid="stForm"][key="actions_{block_id}_{idx}"] div[data-testid="stHorizontalBlock"] > div:nth-child(5) \ {
+            div[data-testid="stForm"][key="actions_""" + str(block_id) + "_" + str(idx) + """"] div[data-testid="stHorizontalBlock"] > div:nth-child(5) {
                 flex: 1 1 120px !important; /* Allow the selectbox to grow but wrap if needed */
             }
             </style>
-            """.format(block_id=block['id'], idx=idx),
+            """
+            #format(block_id=block['id'], idx=idx)
+            ,
             unsafe_allow_html=True
         )
 
