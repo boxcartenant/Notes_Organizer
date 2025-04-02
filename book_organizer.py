@@ -102,48 +102,23 @@ def body(service):
             st.rerun()
             break
 
-        # Inject custom CSS to make columns display in a row with wrapping on mobile
-        st.write(
-            """
-            <style>
-            /* Target the form containing the buttons */
-            div[data-testid="stForm"][key="actions_""" + str(block['id']) + "_" + str(idx) + """"] div[data-testid="stHorizontalBlock"] {
-               display: flex !important;
-                flex-direction: row !important;
-                flex-wrap: wrap !important;
-                gap: 8px !important; /* Add some spacing between buttons */
-            }
-            /* Ensure each column takes up only the necessary width */
-            div[data-testid="stForm"][key="actions_""" + str(block['id']) + "_" + str(idx) + """"] div[data-testid="stHorizontalBlock"] > div {
-                flex: 0 0 auto !important;
-                min-width: 60px !important; /* Minimum width for buttons */
-            }
-            /* Adjust the selectbox column to take up more space if needed */
-            div[data-testid="stForm"][key="actions_""" + str(block['id']) + "_" + str(idx) + """"] div[data-testid="stHorizontalBlock"] > div:nth-child(5) {
-                flex: 1 1 120px !important; /* Allow the selectbox to grow but wrap if needed */
-            }
-            </style>
-            """
-            #format(block_id=block['id'], idx=idx)
-            ,
-            unsafe_allow_html=True
-        )
 
         with st.form(key=f"actions_{block['id']}_{idx}", clear_on_submit=True):
-            col1, col2, col3, col4, col5, col6 = st.columns([1, 1, 1, 1, 2, 1])  # Added col6 for move button
-            with col1:
-                move_up = st.form_submit_button(f"⬆ {idx}", disabled=idx == 0, help = "Swap this block with the block above it")
-            with col2:
-                move_down = st.form_submit_button(f"⬇ {idx}", disabled=idx == len(blocks) - 1, help = "Swap this block with the block below it")
-            with col3:
-                delete = st.form_submit_button(f"🗑 {idx}", help = "Delete this block")
-            with col4:
-                merge = st.form_submit_button(f"🔗 {idx}", disabled=idx == len(blocks) - 1, help = "Merge this block with the block below it")
-            with col5:
-                chapters = list(st.session_state.project["manifest"]["chapters"].keys())
-                target_chapter = st.selectbox(f"Move {idx}", ["Select a Chapter"] + chapters, key=f"move_select_{block['id']}", label_visibility="collapsed")
-            with col6:
-                move_to_chapter = st.form_submit_button("Move", help = "Move this block to the selected chapter")
+            with st.container(border=False):
+                col1, col2, col3, col4, col5, col6 = st.columns([1, 1, 1, 1, 2, 1])  # Added col6 for move button
+                with col1:
+                    move_up = st.form_submit_button(f"⬆ {idx}", disabled=idx == 0, help = "Swap this block with the block above it")
+                with col2:
+                    move_down = st.form_submit_button(f"⬇ {idx}", disabled=idx == len(blocks) - 1, help = "Swap this block with the block below it")
+                with col3:
+                    delete = st.form_submit_button(f"🗑 {idx}", help = "Delete this block")
+                with col4:
+                    merge = st.form_submit_button(f"🔗 {idx}", disabled=idx == len(blocks) - 1, help = "Merge this block with the block below it")
+                with col5:
+                    chapters = list(st.session_state.project["manifest"]["chapters"].keys())
+                    target_chapter = st.selectbox(f"Move {idx}", ["Select a Chapter"] + chapters, key=f"move_select_{block['id']}", label_visibility="collapsed")
+                with col6:
+                    move_to_chapter = st.form_submit_button("Move", help = "Move this block to the selected chapter")
 
             if move_up:
                 blocks[idx]["order"], blocks[idx - 1]["order"] = blocks[idx - 1]["order"], blocks[idx]["order"]
