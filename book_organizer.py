@@ -93,6 +93,32 @@ def body(service):
     
     blocks = sorted(st.session_state.project["manifest"]["chapters"][current_chapter], key=lambda x: x["order"])
 
+
+    # Inject custom CSS to make columns display in a row with wrapping on mobile
+    st.markdown(
+        """
+        <style>
+        /* Target the form containing the buttons */
+        div[data-testid="stForm"][key="actions_{block_id}_{idx}"] div[data-testid="stHorizontalBlock"] {
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: wrap !important;
+            gap: 8px !important; /* Add some spacing between buttons */
+        }
+        /* Ensure each column takes up only the necessary width */
+        div[data-testid="stForm"][key="actions_{block_id}_{idx}"] div[data-testid="stHorizontalBlock"] > div {
+            flex: 0 0 auto !important;
+            min-width: 60px !important; /* Minimum width for buttons */
+        }
+        /* Adjust the selectbox column to take up more space if needed */
+        div[data-testid="stForm"][key="actions_{block_id}_{idx}"] div[data-testid="stHorizontalBlock"] > div:nth-child(5) {
+            flex: 1 1 120px !important; /* Allow the selectbox to grow but wrap if needed */
+        }
+        </style>
+        """.format(block_id=block['id'], idx=idx),
+        unsafe_allow_html=True
+    )
+
     for idx, block in enumerate(blocks):
         new_content = render_block(idx, block, service, current_chapter)
         if new_content is None:
