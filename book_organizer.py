@@ -107,11 +107,7 @@ def body(service):
             """
             <style>
             /* Target the form containing the buttons */
-            div[data-testid="stForm"][key="actions_{block_id}_{idx}"] div[data-testid="stHorizontalBlock"] {
-                display: flex !important;
-                flex-direction: row !important;
-                flex-wrap: wrap !important;
-                gap: 8px !important; /* Add some spacing between buttons */
+            div[data-testid="stForm"][key="actions_{block_id}_{idx}"] div[data-testid="stHorizontalBlock"] {display: flex !important;flex-direction: row !important;flex-wrap: wrap !important;gap: 8px !important; /* Add some spacing between buttons */
             }
             /* Ensure each column takes up only the necessary width */
             div[data-testid="stForm"][key="actions_{block_id}_{idx}"] div[data-testid="stHorizontalBlock"] > div {
