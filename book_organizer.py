@@ -103,7 +103,7 @@ def body(service):
             break
 
         # Inject custom CSS to make columns display in a row with wrapping on mobile
-        st.markdown(
+        st.write(
             """
             <style>
             /* Target the form containing the buttons */
