@@ -10,6 +10,12 @@ interface ButtonRowProps {
   totalBlocks: number;
 }
 
+// Define the shape of RenderData for streamlit-component-lib@1.2.0
+interface ButtonRowRenderData {
+  args: ButtonRowProps;
+  disabled: boolean;
+}
+
 const ButtonContainer = styled.div`
   display: flex;
   flex-wrap: wrap;
@@ -63,7 +69,7 @@ const Select = styled.select`
   border-radius: 4px;
 `;
 
-const ButtonRow: React.FC<RenderData<ButtonRowProps>> = (props) => {
+const ButtonRow: React.FC<ButtonRowRenderData> = (props) => {
   const { blockId, idx, chapters, currentChapter, totalBlocks } = props.args;
 
   useEffect(() => {
