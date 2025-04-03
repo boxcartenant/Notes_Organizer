@@ -1,32 +1,32 @@
 {
-    "name": "button_row",
-    "version": "0.1.0",
-    "private": true,
-    "dependencies": {
-      "@emotion/react": "^11.10.5",
-      "@emotion/styled": "^11.10.5",
-      "react": "^17.0.2",
-      "react-dom": "^17.0.2",
-      "streamlit-component-lib": "^2.0.0"
-    },
-    "devDependencies": {
-      "@types/react": "^17.0.2",
-      "@types/react-dom": "^17.0.2",
-      "typescript": "^4.9.5"
-    },
-    "scripts": {
-      "build": "tsc"
-    },
-    "browserslist": {
-      "production": [
-        ">0.2%",
-        "not dead",
-        "not op_mini all"
-      ],
-      "development": [
-        "last 1 chrome version",
-        "last 1 firefox version",
-        "last 1 safari version"
-      ]
-    }
+  "name": "button_row",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "@emotion/react": "^11.10.5",
+    "@emotion/styled": "^11.10.5",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "streamlit-component-lib": "^2.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^17.0.2",
+    "@types/react-dom": "^17.0.2",
+    "typescript": "^4.9.5"
+  },
+  "scripts": {
+    "build": "tsc && cp src/index.html build/"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
   }
+}
