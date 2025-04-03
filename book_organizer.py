@@ -99,7 +99,7 @@ def body(service):
 
         form_key = f"actions_{block['id']}_{idx}"
         with st.form(key=form_key, clear_on_submit=True):
-            col1, col2, col3, col4 = st.columns([1, 1, 1, 1, 2, 1])  # Added col6 for move button
+            col1, col2, col3, col4, col5, col6 = st.columns([1, 1, 1, 1, 2, 1])  # Added col6 for move button
             with col1:
                 move_up = st.form_submit_button(f"⬆ {idx}", disabled=idx == 0, help = "Swap this block with the block above it")
             with col2:
