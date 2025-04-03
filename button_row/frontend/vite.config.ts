@@ -9,7 +9,7 @@ export default defineConfig({
       input: 'src/index.html',
       output: {
         entryFileNames: 'ButtonRow.js',
-        format: 'iife',
+        format: 'es',
         name: 'ButtonRow',
         assetFileNames: (assetInfo) => {
           if (assetInfo.name === 'index.html') {
