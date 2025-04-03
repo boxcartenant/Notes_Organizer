@@ -6,6 +6,8 @@ from googleapiclient.errors import HttpError
 import logging
 import time
 from io import BytesIO
+# Import the custom component
+from streamlit_button_layout import button_layout
 
 logging.getLogger('googleapiclient.discovery_cache').setLevel(logging.ERROR)
 logging.basicConfig(level=logging.INFO)
@@ -102,24 +104,24 @@ def body(service):
             st.rerun()
             break
 
+        form_key = f"actions_{block['id']}_{idx}"
+        with st.form(key=form_key, clear_on_submit=True):
 
-        with st.form(key=f"actions_{block['id']}_{idx}", clear_on_submit=True):
-            with st.container(border=False):
-                col1, col2, col3, col4, col5, col6 = st.columns([1, 1, 1, 1, 2, 1])  # Added col6 for move button
-                with col1:
-                    move_up = st.form_submit_button(f"⬆ {idx}", disabled=idx == 0, help = "Swap this block with the block above it")
-                with col2:
-                    move_down = st.form_submit_button(f"⬇ {idx}", disabled=idx == len(blocks) - 1, help = "Swap this block with the block below it")
-                with col3:
-                    delete = st.form_submit_button(f"🗑 {idx}", help = "Delete this block")
-                with col4:
-                    merge = st.form_submit_button(f"🔗 {idx}", disabled=idx == len(blocks) - 1, help = "Merge this block with the block below it")
-                with col5:
-                    chapters = list(st.session_state.project["manifest"]["chapters"].keys())
-                    target_chapter = st.selectbox(f"Move {idx}", ["Select a Chapter"] + chapters, key=f"move_select_{block['id']}", label_visibility="collapsed")
-                with col6:
-                    move_to_chapter = st.form_submit_button("Move", help = "Move this block to the selected chapter")
-
+            col1, col2, col3, col4, col5, col6 = st.columns([1, 1, 1, 1, 2, 1])  # Added col6 for move button
+            with col1:
+                move_up = st.form_submit_button(f"⬆ {idx}", disabled=idx == 0, help = "Swap this block with the block above it")
+            with col2:
+                move_down = st.form_submit_button(f"⬇ {idx}", disabled=idx == len(blocks) - 1, help = "Swap this block with the block below it")
+            with col3:
+                delete = st.form_submit_button(f"🗑 {idx}", help = "Delete this block")
+            with col4:
+                merge = st.form_submit_button(f"🔗 {idx}", disabled=idx == len(blocks) - 1, help = "Merge this block with the block below it")
+            with col5:
+                chapters = list(st.session_state.project["manifest"]["chapters"].keys())
+                target_chapter = st.selectbox(f"Move {idx}", ["Select a Chapter"] + chapters, key=f"move_select_{block['id']}", label_visibility="collapsed")
+            with col6:
+                move_to_chapter = st.form_submit_button("Move", help = "Move this block to the selected chapter")
+            
             if move_up:
                 blocks[idx]["order"], blocks[idx - 1]["order"] = blocks[idx - 1]["order"], blocks[idx]["order"]
                 st.session_state.project["manifest"]["chapters"][current_chapter] = blocks
@@ -197,6 +199,9 @@ def body(service):
                     save_project_manifest(service)
                     #st.rerun()
                     break
+        # Apply the button layout using the custom component
+        button_layout(form_key, key=f"button_layout_{block['id']}_{idx}")
+        
     if st.session_state.project["folder_id"]:
         if st.button("Add Empty Block"):
             block_id = generate_unique_block_id(st.session_state.project["manifest"]["chapters"][current_chapter])
