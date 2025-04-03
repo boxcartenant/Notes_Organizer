@@ -1,1 +1,0 @@
-Redirecting to https://unpkg.com/react@17.0.2/umd/react.development.js

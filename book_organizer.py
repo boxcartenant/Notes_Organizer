@@ -6,8 +6,6 @@ from googleapiclient.errors import HttpError
 import logging
 import time
 from io import BytesIO
-# Import the custom component
-from streamlit_button_layout import button_layout
 
 logging.getLogger('googleapiclient.discovery_cache').setLevel(logging.ERROR)
 logging.basicConfig(level=logging.INFO)
@@ -194,8 +192,6 @@ def body(service):
                     save_project_manifest(service)
                     #st.rerun()
                     break
-        # Apply the button layout using the custom component
-        button_layout(form_key, key=f"button_layout_{block['id']}_{idx}")
 
     if st.session_state.project["folder_id"]:
         if st.button("Add Empty Block"):
