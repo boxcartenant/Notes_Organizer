@@ -175,7 +175,7 @@ def body(service):
                 if "file_id" in block:
                     #move the file on google drive
                     logging.info(f"Length: {len(st.session_state.project["manifest"]["chapters"][target_chapter])}")
-                    logging.info(f"Contents: {str([str(blocc)+'\n' for blocc in st.session_state.project["manifest"]["chapters"][target_chapter]])}")
+                    #logging.info(f"Contents: {str([str(blocc)+'\n' for blocc in st.session_state.project["manifest"]["chapters"][target_chapter]])}")
                     block["order"] = len(st.session_state.project["manifest"]["chapters"][target_chapter]) +1
 
                     
