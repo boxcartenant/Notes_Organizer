@@ -115,18 +115,15 @@ def body(service):
                 move_to_chapter = st.form_submit_button("Move", help = "Move this block to the selected chapter")
             
             if move_up:
-                logging.info(f"gonna move blocks...{str([str(blocc) for blocc in blocks])}")
+                
                 blocks[idx]["order"], blocks[idx - 1]["order"] = blocks[idx - 1]["order"], blocks[idx]["order"]
                 st.session_state.project["manifest"]["chapters"][current_chapter] = blocks
-                logging.info(f"moved blocks...{str([str(blocc) for blocc in blocks])}")
                 save_project_manifest(service)
                 #st.rerun()
                 break
             elif move_down:
-                logging.info(f"gonna move blocks...{str([str(blocc) for blocc in blocks])}")
                 blocks[idx]["order"], blocks[idx + 1]["order"] = blocks[idx + 1]["order"], blocks[idx]["order"]
                 st.session_state.project["manifest"]["chapters"][current_chapter] = blocks
-                logging.info(f"moved blocks...{str([str(blocc) for blocc in blocks])}")
                 save_project_manifest(service)
                 #st.rerun()
                 break
@@ -177,7 +174,10 @@ def body(service):
             elif move_to_chapter and target_chapter and target_chapter != current_chapter:
                 if "file_id" in block:
                     #move the file on google drive
+                    logging.info(f"Length: {len(st.session_state.project["manifest"]["chapters"][target_chapter])}")
+                    logging.info(f"Contents: {str([str(blocc)+"\n" for blocc in st.session_state.project["manifest"]["chapters"][target_chapter]])}")
                     block["order"] = len(st.session_state.project["manifest"]["chapters"][target_chapter]) +1
+
                     
                     #are these lines necessary?
                     #block = update_block_filepath(block, target_chapter)
