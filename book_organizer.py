@@ -91,12 +91,7 @@ def body(service):
             "manifest": {"chapters": {"Staging Area": []}},
             "current_chapter": "Staging Area"
         }
-
-    
     blocks = sorted(st.session_state.project["manifest"]["chapters"][current_chapter], key=lambda x: x["order"])
-
-
-    
 
     for idx, block in enumerate(blocks):
         new_content = render_block(idx, block, service, current_chapter)
@@ -201,7 +196,7 @@ def body(service):
                     break
         # Apply the button layout using the custom component
         button_layout(form_key, key=f"button_layout_{block['id']}_{idx}")
-        
+
     if st.session_state.project["folder_id"]:
         if st.button("Add Empty Block"):
             block_id = generate_unique_block_id(st.session_state.project["manifest"]["chapters"][current_chapter])

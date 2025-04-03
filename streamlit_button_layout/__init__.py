@@ -4,8 +4,8 @@ import streamlit.components.v1 as components
 
 # When deploying to production, point to the built frontend files
 parent_dir = os.path.dirname(os.path.abspath(__file__))
-build_dir = os.path.join(parent_dir, "frontend", "build")
-_button_layout = components.declare_component("button_layout", path=build_dir)
+#build_dir = os.path.join(parent_dir, "frontend", "build")
+_button_layout = components.declare_component("button_layout")
 
 def button_layout(form_id, key=None):
     """
