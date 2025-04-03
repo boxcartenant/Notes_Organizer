@@ -99,7 +99,7 @@ def body(service):
 
         form_key = f"actions_{block['id']}_{idx}"
         with st.form(key=form_key, clear_on_submit=True):
-            col1, col2, col3, col4 = st.columns([1, 1, 1, 1])  # Added col6 for move button
+            col1, col2, col3, col4 = st.columns([1, 1, 1, 1, 2, 1])  # Added col6 for move button
             with col1:
                 move_up = st.form_submit_button(f"⬆ {idx}", disabled=idx == 0, help = "Swap this block with the block above it")
             with col2:
@@ -108,7 +108,6 @@ def body(service):
                 delete = st.form_submit_button(f"🗑 {idx}", help = "Delete this block")
             with col4:
                 merge = st.form_submit_button(f"🔗 {idx}", disabled=idx == len(blocks) - 1, help = "Merge this block with the block below it")
-            col5, col6 = st.columns([2,1])
             with col5:
                 chapters = list(st.session_state.project["manifest"]["chapters"].keys())
                 target_chapter = st.selectbox(f"Move {idx}", ["Select a Chapter"] + chapters, key=f"move_select_{block['id']}", label_visibility="collapsed")
