@@ -7,6 +7,9 @@ import logging
 import time
 from io import BytesIO
 
+# Import the custom component
+from button_row import button_row
+
 logging.getLogger('googleapiclient.discovery_cache').setLevel(logging.ERROR)
 logging.basicConfig(level=logging.INFO)
 
@@ -97,37 +100,31 @@ def body(service):
             st.rerun()
             break
 
-        form_key = f"actions_{block['id']}_{idx}"
-        with st.form(key=form_key, clear_on_submit=True):
-            col1, col2, col3, col4, col5, col6 = st.columns([1, 1, 1, 1, 2, 1])  # Added col6 for move button
-            with col1:
-                move_up = st.form_submit_button(f"⬆ {idx}", disabled=idx == 0, help = "Swap this block with the block above it")
-            with col2:
-                move_down = st.form_submit_button(f"⬇ {idx}", disabled=idx == len(blocks) - 1, help = "Swap this block with the block below it")
-            with col3:
-                delete = st.form_submit_button(f"🗑 {idx}", help = "Delete this block")
-            with col4:
-                merge = st.form_submit_button(f"🔗 {idx}", disabled=idx == len(blocks) - 1, help = "Merge this block with the block below it")
-            with col5:
-                chapters = list(st.session_state.project["manifest"]["chapters"].keys())
-                target_chapter = st.selectbox(f"Move {idx}", ["Select a Chapter"] + chapters, key=f"move_select_{block['id']}", label_visibility="collapsed")
-            with col6:
-                move_to_chapter = st.form_submit_button("Move", help = "Move this block to the selected chapter")
-            
-            if move_up:
-                
+        chapters = list(st.session_state.project["manifest"]["chapters"].keys())
+        
+        action = button_row(
+            block_id=block["id"],
+            idx=idx,
+            chapters=chapters,
+            current_chapter=current_chapter,
+            total_blocks=len(blocks),
+            key=f"actions_{block['id']}_{idx}"
+        )
+        
+        if action:
+            if action["action"] == "move_up":
                 blocks[idx]["order"], blocks[idx - 1]["order"] = blocks[idx - 1]["order"], blocks[idx]["order"]
                 st.session_state.project["manifest"]["chapters"][current_chapter] = blocks
                 save_project_manifest(service)
                 #st.rerun()
                 break
-            elif move_down:
+            elif action["action"] == "move_down":
                 blocks[idx]["order"], blocks[idx + 1]["order"] = blocks[idx + 1]["order"], blocks[idx]["order"]
                 st.session_state.project["manifest"]["chapters"][current_chapter] = blocks
                 save_project_manifest(service)
                 #st.rerun()
                 break
-            elif delete:
+            elif action["action"] == "delete":
                 if "file_id" in block and block["file_id"] in block_content_store:
                     del block_content_store[block["file_id"]]
                 if "file_id" in block:
@@ -136,7 +133,7 @@ def body(service):
                 save_project_manifest(service)
                 #st.rerun()
                 break
-            elif merge:
+            elif action["action"] == "merge":
                 try:
                     next_block = blocks[idx + 1]
                     next_content = download_file_wrapper(next_block["file_id"], service) if "file_id" in next_block else ""
@@ -171,7 +168,8 @@ def body(service):
                         save_project_manifest(service)
                         #st.rerun()
                         break
-            elif move_to_chapter and target_chapter and target_chapter != current_chapter:
+            elif action["action"] == "move_to_chapter" and action["targetChapter"] and action["targetChapter"] != current_chapter:
+                target_chapter = action["targetChapter"]
                 if "file_id" in block:
                     #move the file on google drive
                     #the index is +1'd becauase remove_block_from_manifes decrements it. 
