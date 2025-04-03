@@ -177,7 +177,7 @@ def body(service):
             elif move_to_chapter and target_chapter and target_chapter != current_chapter:
                 if "file_id" in block:
                     #move the file on google drive
-                    block["order"] = len(st.session_state.project["manifest"]["chapters"][target_chapter])
+                    block["order"] = len(st.session_state.project["manifest"]["chapters"][target_chapter]) +1
                     
                     #are these lines necessary?
                     #block = update_block_filepath(block, target_chapter)
