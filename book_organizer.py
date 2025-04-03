@@ -174,8 +174,8 @@ def body(service):
             elif move_to_chapter and target_chapter and target_chapter != current_chapter:
                 if "file_id" in block:
                     #move the file on google drive
-                    logging.info(f"Length: {len(st.session_state.project['manifest']['chapters'][target_chapter])}")
-                    logging.info(f"Contents: {str([str(blocc) for blocc in st.session_state.project['manifest']['chapters'][target_chapter]])}")
+                    #the index is +1'd becauase remove_block_from_manifes decrements it. 
+                    #....... I'll fix that later.
                     block["order"] = len(st.session_state.project["manifest"]["chapters"][target_chapter]) +1
 
                     
