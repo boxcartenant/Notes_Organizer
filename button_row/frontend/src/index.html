@@ -10,6 +10,8 @@
   <script>
     console.log("index.html: ButtonRow.js loaded");
     console.log("index.html: ButtonRow available:", typeof ButtonRow !== "undefined");
+    console.log("index.html: ReactDOM available:", typeof ReactDOM !== "undefined");
+    console.log("index.html: Streamlit available:", typeof Streamlit !== "undefined");
     try {
       ReactDOM.render(
         React.createElement(ButtonRow.default, Streamlit.getComponentArgs()),

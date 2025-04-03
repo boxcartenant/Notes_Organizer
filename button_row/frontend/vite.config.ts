@@ -10,8 +10,20 @@ export default defineConfig({
       output: {
         entryFileNames: 'ButtonRow.js',
         format: 'iife',
-        name: 'ButtonRow'
+        name: 'ButtonRow',
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name === 'index.html') {
+            return '[name][extname]'; // Outputs index.html directly to build/
+          }
+          return 'assets/[name][extname]';
+        },
+        globals: {
+            'react': 'React',
+            'react-dom': 'ReactDOM',
+            'streamlit-component-lib': 'Streamlit'
+          }
       }
-    }
+    },
+    assetsDir: ''
   }
 });
