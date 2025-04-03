@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Button Row Component</title>
+  <script async type="module" crossorigin src="/ButtonRow.js"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script src="ButtonRow.js"></script>
+  <script>
+    console.log("index.html: ButtonRow.js loaded");
+    console.log("index.html: ButtonRow available:", typeof ButtonRow !== "undefined");
+    try {
+      ReactDOM.render(
+        React.createElement(ButtonRow.default, Streamlit.getComponentArgs()),
+        document.getElementById("root")
+      );
+      console.log("index.html: Component rendered successfully");
+    } catch (error) {
+      console.error("index.html: Error rendering component:", error);
+    }
+  </script>
+</body>
+</html>
