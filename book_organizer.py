@@ -115,14 +115,18 @@ def body(service):
                 move_to_chapter = st.form_submit_button("Move", help = "Move this block to the selected chapter")
             
             if move_up:
+                logging.debug(f"gonna move blocks...", str(str(blocc) for blocc in blocks))
                 blocks[idx]["order"], blocks[idx - 1]["order"] = blocks[idx - 1]["order"], blocks[idx]["order"]
                 st.session_state.project["manifest"]["chapters"][current_chapter] = blocks
+                logging.debug(f"moved blocks...", str(str(blocc) for blocc in blocks))
                 save_project_manifest(service)
                 #st.rerun()
                 break
             elif move_down:
+                logging.debug(f"gonna move blocks...", str(str(blocc) for blocc in blocks))
                 blocks[idx]["order"], blocks[idx + 1]["order"] = blocks[idx + 1]["order"], blocks[idx]["order"]
                 st.session_state.project["manifest"]["chapters"][current_chapter] = blocks
+                logging.debug(f"moved blocks...", str(str(blocc) for blocc in blocks))
                 save_project_manifest(service)
                 #st.rerun()
                 break
