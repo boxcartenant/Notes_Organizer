@@ -17,7 +17,7 @@ def main():
     if not "mobile_friendly_view" in st.session_state:
         st.session_state.mobile_friendly_view = False
         st.session_state.mobile_boxsize_fixed = False
-        st.session_state.default_box_size = 300
+        st.session_state.default_box_size = 150
 
     # Sidebar: Mode buttons
     with st.sidebar:
