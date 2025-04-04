@@ -70,7 +70,7 @@ def render_block(idx, block, service, current_chapter, mobile_friendly=False):
     #if in mobile-friendly view and box sizes aren't fixed, show the box-size slider
     if mobile_friendly and st.session_state.mobile_boxsize_fixed:
         #if the slider isn't equal to the current height of the block rerun to refresh the block
-        current_height = st.session_state[f"height_{unique_key}"]
+        current_height = st.session_state.get(f"height_{unique_key}", st.session_state.default_box_size)
         height_value = st.slider(f"Adjust height for Block {idx + 1}", min_value=100, max_value=600, value=height, key=f"slider_{unique_key}")
         if current_height != height_value:
             st.session_state[f"height_{unique_key}"] = height_value
