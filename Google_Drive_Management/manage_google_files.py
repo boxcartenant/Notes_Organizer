@@ -344,9 +344,6 @@ def browse_google_drive(service):
             if old_default_box_size != st.session_state.default_box_size:
                 st.rerun()
 
-            with st.expander("Report a Bug", expanded = False):
-                st.write("Fix it yourself! Fork the source: https://github.com/boxcartenant/Notes_Organizer")
-
 def create_auth_flow():
     """Create an OAuth flow using Streamlit secrets."""
     client_config = {
