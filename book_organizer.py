@@ -64,10 +64,12 @@ def render_block(idx, block, service, current_chapter, mobile_friendly=False):
         return None
 
     unique_key = f"textblock_{block['id']}_{block.get('file_id', idx)}"
-    height = st.session_state.get(f"height_{unique_key}", 300) if mobile_friendly else 300
+    height = st.session_state.get(f"height_{unique_key}", st.session_state.default_box_size) if mobile_friendly else st.session_state.default_box_size
     new_content = st.text_area(f"Block {idx + 1} ({current_chapter})", value=block_content, key=unique_key, height=height)
     
-    if mobile_friendly:
+    #if in mobile-friendly view and box sizes aren't fixed, show the box-size slider
+    if mobile_friendly and st.session_state.mobile_boxsize_fixed:
+        #if the slider isn't equal to the current height of the block rerun to refresh the block
         current_height = st.session_state[f"height_{unique_key}"]
         height_value = st.slider(f"Adjust height for Block {idx + 1}", min_value=100, max_value=600, value=height, key=f"slider_{unique_key}")
         if current_height != height_value:
@@ -87,8 +89,6 @@ def render_block(idx, block, service, current_chapter, mobile_friendly=False):
 def body(service):
     if "mobile_friendly_view" not in st.session_state:
         st.session_state.mobile_friendly_view = False
-    
-    st.session_state.mobile_friendly_view = st.checkbox("Mobile-Friendly View", value=st.session_state.mobile_friendly_view)
 
     current_chapter = st.session_state.project["current_chapter"]
     st.write(f"#### == {current_chapter} ==")

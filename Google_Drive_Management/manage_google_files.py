@@ -324,8 +324,28 @@ def browse_google_drive(service):
                         st.rerun()
 
 
-        with st.expander("Report a Bug", expanded = False):
-            st.write("Fix it yourself! Fork the source: https://github.com/boxcartenant/Notes_Organizer")
+        with st.expander("Settings", expanded = False):
+            #Mobile friendly view: changes the buttons under the blocks to a dropdown list
+            old_mobile_friendly = st.session_state.mobile_friendly_view
+            st.session_state.mobile_friendly_view = st.checkbox("Mobile-Friendly View", value=st.session_state.mobile_friendly_view)
+            if old_mobile_friendly != st.session_state.mobile_friendly_view:
+                st.rerun()
+            
+            #Mobile Boxsize Fixed: Shows a slider to resize textboxes under every block
+            if st.session_state.mobile_friendly_view:
+                old_mobile_boxsize_fixed = st.session_state.mobile_boxsize_fixed
+                st.session_state.mobile_boxsize_fixed = st.checkbox("Slider under every block", value=st.session_state.mobile_boxsize_fixed)
+                if old_mobile_boxsize_fixed != st.session_state.mobile_boxsize_fixed:
+                    st.rerun()
+            
+            #Default Box Size: sets the default height of textboxes in blocks
+            old_default_box_size = st.session_state.default_box_size
+            st.session_state.default_box_size = st.slider(f"Adjust default block height", min_value=100, max_value=600, value=st.session_state.default_box_size)
+            if old_default_box_size != st.session_state.default_box_size:
+                st.rerun()
+
+            with st.expander("Report a Bug", expanded = False):
+                st.write("Fix it yourself! Fork the source: https://github.com/boxcartenant/Notes_Organizer")
 
 def create_auth_flow():
     """Create an OAuth flow using Streamlit secrets."""

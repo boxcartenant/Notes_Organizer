@@ -14,6 +14,11 @@ def main():
     st.logo(image = myLogoUrl, link = myLogoUrl)
     st.set_page_config(page_title="Boxcar-Notes", page_icon=myLogoUrl)
 
+    if not "mobile_friendly_view" in st.session_state:
+        st.session_state.mobile_friendly_view = False
+        st.session_state.mobile_boxsize_fixed = False
+        st.session_state.default_box_size = 300
+
     # Sidebar: Mode buttons
     with st.sidebar:
         logged_in = authenticate_user()
