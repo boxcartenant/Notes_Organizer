@@ -68,8 +68,12 @@ def render_block(idx, block, service, current_chapter, mobile_friendly=False):
     new_content = st.text_area(f"Block {idx + 1} ({current_chapter})", value=block_content, key=unique_key, height=height)
     
     if mobile_friendly:
+        current_height = st.session_state[f"height_{unique_key}"]
         height_value = st.slider(f"Adjust height for Block {idx + 1}", min_value=100, max_value=600, value=height, key=f"slider_{unique_key}")
-        st.session_state[f"height_{unique_key}"] = height_value
+        if current_height != height_value:
+            st.session_state[f"height_{unique_key}"] = height_value
+            st.rerun()
+            return None
     
     if new_content != block_content and "file_id" in block:
         media = MediaIoBaseUpload(BytesIO(new_content.encode("utf-8")), mimetype="text/plain")
