@@ -12,7 +12,7 @@ def main():
 
     myLogoUrl = "https://boxcarprojectspace.wordpress.com/wp-content/uploads/2025/03/wing-pen-1.jpg"
     st.logo(image = myLogoUrl, link = myLogoUrl)
-    st.set_page_config(page_title="Boxcar-Notes", page_icon=myLogoUrl, layout="wide", initial_sidebar_state="auto", menu_items=None)
+    st.set_page_config(page_title="Boxcar-Notes", page_icon=myLogoUrl)
 
     # Sidebar: Mode buttons
     with st.sidebar:
