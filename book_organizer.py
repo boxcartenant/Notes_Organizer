@@ -64,12 +64,10 @@ def render_block(idx, block, service, current_chapter, mobile_friendly=False):
         return None
 
     unique_key = f"textblock_{block['id']}_{block.get('file_id', idx)}"
-    # Default height or adjustable via slider in mobile view
     height = st.session_state.get(f"height_{unique_key}", 300) if mobile_friendly else 300
     new_content = st.text_area(f"Block {idx + 1} ({current_chapter})", value=block_content, key=unique_key, height=height)
     
     if mobile_friendly:
-        # Add slider for height adjustment in mobile view
         height_value = st.slider(f"Adjust height for Block {idx + 1}", min_value=100, max_value=600, value=height, key=f"slider_{unique_key}")
         st.session_state[f"height_{unique_key}"] = height_value
     
@@ -83,11 +81,9 @@ def render_block(idx, block, service, current_chapter, mobile_friendly=False):
     return new_content
 
 def body(service):
-    # Initialize mobile_friendly_view in session state if not present
     if "mobile_friendly_view" not in st.session_state:
         st.session_state.mobile_friendly_view = False
     
-    # Add toggle for mobile/desktop view
     st.session_state.mobile_friendly_view = st.checkbox("Mobile-Friendly View", value=st.session_state.mobile_friendly_view)
 
     current_chapter = st.session_state.project["current_chapter"]
@@ -108,7 +104,6 @@ def body(service):
             break
 
         if st.session_state.mobile_friendly_view:
-            # Mobile view: Two dropdowns
             actions = ["Select Action", "Move Up", "Move Down", "Delete", "Merge"]
             action = st.selectbox(f"Action for Block {idx + 1}", actions, key=f"action_{block['id']}_{idx}")
             
@@ -121,11 +116,13 @@ def body(service):
                     st.session_state.project["manifest"]["chapters"][current_chapter] = blocks
                     save_project_manifest(service)
                     st.rerun()
+                    break
                 elif action == "Move Down" and idx < len(blocks) - 1:
                     blocks[idx]["order"], blocks[idx + 1]["order"] = blocks[idx + 1]["order"], blocks[idx]["order"]
                     st.session_state.project["manifest"]["chapters"][current_chapter] = blocks
                     save_project_manifest(service)
                     st.rerun()
+                    break
                 elif action == "Delete":
                     if "file_id" in block and block["file_id"] in block_content_store:
                         del block_content_store[block["file_id"]]
@@ -134,6 +131,7 @@ def body(service):
                     remove_block_from_manifest(current_chapter, blocks, idx)
                     save_project_manifest(service)
                     st.rerun()
+                    break
                 elif action == "Merge" and idx < len(blocks) - 1:
                     next_block = blocks[idx + 1]
                     next_content = download_file_wrapper(next_block["file_id"], service) if "file_id" in next_block else ""
@@ -142,6 +140,7 @@ def body(service):
                         remove_block_from_manifest(current_chapter, blocks, idx + 1)
                         save_project_manifest(service)
                         st.rerun()
+                        break
                     elif "file_id" in block:
                         merged_content = new_content + "\n\n" + next_content
                         media = MediaIoBaseUpload(BytesIO(merged_content.encode("utf-8")), mimetype="text/plain")
@@ -154,6 +153,7 @@ def body(service):
                         remove_block_from_manifest(current_chapter, blocks, idx + 1)
                         save_project_manifest(service)
                         st.rerun()
+                        break
 
             if target_chapter != "Select a Chapter" and target_chapter != current_chapter:
                 block["order"] = len(st.session_state.project["manifest"]["chapters"][target_chapter]) + 1
@@ -161,9 +161,9 @@ def body(service):
                 remove_block_from_manifest(current_chapter, blocks, idx)
                 save_project_manifest(service)
                 st.rerun()
+                break
 
         else:
-            # Desktop view: Original button layout
             form_key = f"actions_{block['id']}_{idx}"
             with st.form(key=form_key, clear_on_submit=True):
                 col1, col2, col3, col4, col5, col6 = st.columns([1, 1, 1, 1, 2, 1])
@@ -186,11 +186,13 @@ def body(service):
                     st.session_state.project["manifest"]["chapters"][current_chapter] = blocks
                     save_project_manifest(service)
                     st.rerun()
+                    break
                 elif move_down:
                     blocks[idx]["order"], blocks[idx + 1]["order"] = blocks[idx + 1]["order"], blocks[idx]["order"]
                     st.session_state.project["manifest"]["chapters"][current_chapter] = blocks
                     save_project_manifest(service)
                     st.rerun()
+                    break
                 elif delete:
                     if "file_id" in block and block["file_id"] in block_content_store:
                         del block_content_store[block["file_id"]]
@@ -199,6 +201,7 @@ def body(service):
                     remove_block_from_manifest(current_chapter, blocks, idx)
                     save_project_manifest(service)
                     st.rerun()
+                    break
                 elif merge:
                     try:
                         next_block = blocks[idx + 1]
@@ -208,6 +211,7 @@ def body(service):
                             remove_block_from_manifest(current_chapter, blocks, idx + 1)
                             save_project_manifest(service)
                             st.rerun()
+                            break
                         elif "file_id" in block:
                             merged_content = new_content + "\n\n" + next_content
                             media = MediaIoBaseUpload(BytesIO(merged_content.encode("utf-8")), mimetype="text/plain")
@@ -220,18 +224,37 @@ def body(service):
                             remove_block_from_manifest(current_chapter, blocks, idx + 1)
                             save_project_manifest(service)
                             st.rerun()
+                            break
+                        else:
+                            logging.error(f"Cannot merge: No file_id for block {block['id']}")
+                            break
                     except HttpError as e:
                         logging.error(f"Error during merge: {e}")
                         if e.resp.status == 404 and "file_id" in next_block:
                             remove_block_from_manifest(current_chapter, blocks, idx + 1)
                             save_project_manifest(service)
                             st.rerun()
+                            break
                 elif move_to_chapter and target_chapter and target_chapter != current_chapter:
-                    block["order"] = len(st.session_state.project["manifest"]["chapters"][target_chapter]) + 1
-                    st.session_state.project["manifest"]["chapters"][target_chapter].append(block)
-                    remove_block_from_manifest(current_chapter, blocks, idx)
-                    save_project_manifest(service)
-                    st.rerun()
+                    if "file_id" in block:
+                        #move the file on google drive
+                        #the index is +1'd becauase remove_block_from_manifes decrements it. 
+                        #....... I'll fix that later.
+                        block["order"] = len(st.session_state.project["manifest"]["chapters"][target_chapter]) +1
+    
+                        
+                        #are these lines necessary?
+                        #block = update_block_filepath(block, target_chapter)
+                        #media = MediaIoBaseUpload(BytesIO(new_content.encode("utf-8")), mimetype="text/plain")
+    
+                        #add the block back into the new chapter manifest
+                        st.session_state.project["manifest"]["chapters"][target_chapter].append(block)
+                        
+                        #remove the block from the old chapter manifest
+                        remove_block_from_manifest(current_chapter, blocks, idx)
+                        save_project_manifest(service)
+                        st.rerun()
+                        break
 
     if st.session_state.project["folder_id"]:
         if st.button("Add Empty Block"):
