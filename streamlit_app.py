@@ -35,7 +35,7 @@ and you want to organize them into topical units (“chapters”) and present th
 This project is a tool for organizing notes into chapters...like if you're writing a book.\
 It creates a folder on your google drive for your project. To get started:")
         st.write("- Log into your google drive account using the button on the expander (left).")
-        st.write("When you’re done, you can dump the contents of the project to a folder called “output”, which will contain a single .txt. file for each chapter.")
+        st.write("When you’re done, you can dump the contents of the project to a folder called “output”, which will contain a single \".txt\" file for each chapter.")
         
             
 if __name__ == "__main__":
