@@ -30,9 +30,12 @@ def main():
             browse_google_drive(service) # a call to manage_google_files.py
             book_organizer.body(service) # a call to book_organizer.py
     else:
-        st.write("This project is a tool for organizing notes into chapters...like if you're writing a book.")
-        st.write("It creates a folder on your google drive for your project. To get started:")
+        st.write("If you are like me, you have hundreds of pages of notes stored in .txt files, \
+and you want to organize them into topical units (“chapters”) and present the information in an orderly manner. \
+This project is a tool for organizing notes into chapters...like if you're writing a book.\
+It creates a folder on your google drive for your project. To get started:")
         st.write("- Log into your google drive account using the button on the expander (left).")
+        st.write("When you’re done, you can dump the contents of the project to a folder called “output”, which will contain a single .txt. file for each chapter.")
         
             
 if __name__ == "__main__":
