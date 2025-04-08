@@ -31,7 +31,7 @@ def main():
             book_organizer.body(service) # a call to book_organizer.py
     else:
         st.write("If you are like me, you have hundreds of pages of notes stored in .txt files, \
-and you want to organize them into topical units (“chapters”) and present the information in an orderly manner. \
+and you want to organize them into topical units (“chapters”) and present the information in an orderly manner.\n\n \
 This project is a tool for organizing notes into chapters...like if you're writing a book. \
 It creates a folder on your google drive for your project, and another folder for txt files you want to use across projects. To get started:")
         st.write("- Log into your google drive account using the button on the expander (left).")
