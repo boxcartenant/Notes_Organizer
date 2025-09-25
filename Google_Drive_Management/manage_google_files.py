@@ -254,7 +254,7 @@ def browse_google_drive(service):
             #logging.info(f"selected folder: {current_uploads_folder_name} : {current_uploads_folder_id}")
 
             # List files in the current uploads folder
-            with st.expander("Files", expanded=True):
+            with st.expander("Files", expanded=False):
                 files = list_drive_files(service, current_uploads_folder_id)
                 for file in files:
                     if file["name"].endswith(".txt"):
