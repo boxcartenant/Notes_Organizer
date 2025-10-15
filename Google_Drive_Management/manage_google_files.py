@@ -278,18 +278,51 @@ def browse_google_drive(service):
             #st.write("### Chapters")
             with st.expander("Chapters", expanded=True):
                 chapters = list(st.session_state.project["manifest"]["chapters"].keys())
-                new_target_chapter = st.selectbox("Current Chapter", chapters, index=chapters.index(st.session_state.project["current_chapter"]))
-                if new_target_chapter and new_target_chapter != st.session_state.project["current_chapter"]:
+                current_chapter = st.session_state.project["current_chapter"]
+                
+                new_target_chapter = st.selectbox("Current Chapter", chapters, index=chapters.index(current_chapter))
+                if new_target_chapter and new_target_chapter != current_chapter:
                     clear_block_cache()  # Clear cache when switching chapters
                     st.session_state.project["current_chapter"] = new_target_chapter
                     st.rerun()
-                with st.form(key="New_Chapter_Name", clear_on_submit=True, enter_to_submit=True):
-                    new_chapter = st.text_input("New Chapter Name", key="new_chapter")
-                    submitted = st.form_submit_button("Add Chapter")
-                    if submitted and new_chapter and new_chapter not in chapters:
-                        st.session_state.project["manifest"]["chapters"][new_chapter] = []
-                        st.success("Chapter Added!")
-                        st.rerun()
+
+                # Rename Chapter Form
+                with st.expander("Rename Current Chapter"):
+                    with st.form(key="Rename_Chapter_Form", clear_on_submit=True):
+                        new_name = st.text_input("New Name for Current Chapter", key="rename_chapter")
+                        rename_submitted = st.form_submit_button("Rename Chapter")
+                        if rename_submitted and new_name and new_name not in chapters:
+                            # Rename the chapter
+                            st.session_state.project["manifest"]["chapters"][new_name] = st.session_state.project["manifest"]["chapters"].pop(current_chapter)
+                            st.session_state.project["current_chapter"] = new_name
+                            save_project_manifest(service)
+                            st.success(f"Chapter renamed to '{new_name}'")
+                            st.rerun()
+                
+                # New Chapter Form
+                with st.expander("Add New Chapter"):
+                    with st.form(key="New_Chapter_Name", clear_on_submit=True, enter_to_submit=True):
+                        new_chapter = st.text_input("New Chapter Name", key="new_chapter")
+                        submitted = st.form_submit_button("Add Chapter")
+                        if submitted and new_chapter and new_chapter not in chapters:
+                            st.session_state.project["manifest"]["chapters"][new_chapter] = []
+                            st.success("Chapter Added!")
+                            st.rerun()
+
+#            with st.expander("Chapters", expanded=True):
+#                chapters = list(st.session_state.project["manifest"]["chapters"].keys())
+#                new_target_chapter = st.selectbox("Current Chapter", chapters, index=chapters.index(st.session_state.project["current_chapter"]))
+#                if new_target_chapter and new_target_chapter != st.session_state.project["current_chapter"]:
+#                    clear_block_cache()  # Clear cache when switching chapters
+#                    st.session_state.project["current_chapter"] = new_target_chapter
+#                    st.rerun()
+#                with st.form(key="New_Chapter_Name", clear_on_submit=True, enter_to_submit=True):
+#                    new_chapter = st.text_input("New Chapter Name", key="new_chapter")
+#                    submitted = st.form_submit_button("Add Chapter")
+#                    if submitted and new_chapter and new_chapter not in chapters:
+#                        st.session_state.project["manifest"]["chapters"][new_chapter] = []
+#                        st.success("Chapter Added!")
+#                        st.rerun()
 
             # Save and Dump buttons
             col1, col2 = st.columns(2)
