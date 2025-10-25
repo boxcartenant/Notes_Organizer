@@ -89,11 +89,34 @@ def dump_project_to_files(service):
     st.success("Project dumped to output files!")
 
 def list_drive_files(service, folder_id=None):
-    """List files and folders in Google Drive."""
+    """List all files and folders in Google Drive, handling pagination."""
     query = "'root' in parents" if not folder_id else f"'{folder_id}' in parents"
     query += " and trashed=false"
-    results = service.files().list(q=query, fields="files(id, name, mimeType)").execute()
-    return results.get("files", [])
+    files = []
+    page_token = None
+    while True:
+        try:
+            results = service.files().list(
+                q=query,
+                fields="nextPageToken, files(id, name, mimeType)",
+                pageSize=1000,  # Max page size to reduce API calls
+                pageToken=page_token,
+                supportsAllDrives=True  # Include shared drives if applicable
+            ).execute()
+            files.extend(results.get("files", []))
+            page_token = results.get("nextPageToken")
+            if not page_token:
+                break
+        except Exception as e:
+            logging.error(f"Error listing files: {e}")
+            raise
+    logging.info(f"Retrieved {len(files)} files/folders for folder_id: {folder_id}")
+    return files
+    #"""List files and folders in Google Drive."""
+    #query = "'root' in parents" if not folder_id else f"'{folder_id}' in parents"
+    #query += " and trashed=false"
+    #results = service.files().list(q=query, fields="files(id, name, mimeType)").execute()
+    #return results.get("files", [])
 
 def download_file(file_id, service):
     """Download a file from Google Drive as string."""
