@@ -223,7 +223,17 @@ def browse_google_drive(service):
                                 st.session_state.project["manifest"]["chapters"] = {"Staging Area": []}
                             st.session_state.project["current_chapter"] = list(st.session_state.project["manifest"]["chapters"].keys())[0]
                         # Set uploads folder IDs
-                        uploads_folder = next((f for f in list_drive_files(service, selected_folder["id"]) if f["name"] == "uploads"), None)
+                        #uploads_folder = next((f for f in list_drive_files(service, selected_folder["id"]) if f["name"] == "uploads"), None)
+                        # Set uploads folder IDs with retry
+                        max_retries = 3
+                        retry_delay = 1  # seconds
+                        uploads_folder = None
+                        for attempt in range(max_retries):
+                            uploads_folder = next((f for f in list_drive_files(service, selected_folder["id"]) if f["name"] == "uploads"), None)
+                            if uploads_folder:
+                                break
+                            logging.info(f"Uploads folder not found, retrying ({attempt + 1}/{max_retries})...")
+                            time.sleep(retry_delay)
                         st.session_state.uploads_folder_id = uploads_folder["id"]
                         root_files = list_drive_files(service, None)
                         shared_uploads_folder = next((f for f in root_files if f["name"] == "Boxcar Notes Uploads"), None)
