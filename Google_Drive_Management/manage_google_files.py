@@ -429,6 +429,8 @@ def authenticate_user():
         query_params = st.query_params
         if "code" in query_params:
             flow = create_auth_flow()
+            if "code_verifier" in st.session_state:
+                flow.code_verifier = st.session_state["code_verifier"]
             flow.fetch_token(code=query_params["code"])
             creds = flow.credentials
             st.session_state["credentials"] = {
@@ -445,6 +447,7 @@ def authenticate_user():
         else:
             flow = create_auth_flow()
             auth_url, _ = flow.authorization_url(prompt="consent")
+            st.session_state["code_verifier"] = flow.code_verifier
             st.write("Click the link below to log in:")
             st.markdown(f"[Log in with Google]({auth_url})")
             return False
